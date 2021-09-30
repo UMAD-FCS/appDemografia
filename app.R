@@ -27,6 +27,9 @@ df_generica <- readxl::read_excel("Base_Motor_Demografica.xls") %>%
   janitor::clean_names() %>% 
   select(- x1,- x2,- codind, - responsable) 
 
+depto=geouy::load_geouy("Departamentos")
+
+df_generica$fecha=as.character(df_generica$fecha)                   
 
 
 ui <- fluidPage(tags$head(tags$script('
@@ -52,7 +55,7 @@ ui <- fluidPage(tags$head(tags$script('
     title = "Tamaño",
     value = 'borelito',
     br(),
-    div( id ="Sidebar",sidebarPanel(
+    div( id ="Sidebar",sidebarPanel(width = 3,
       #style = "position:fixed;width:22%;",
       selectInput(
         "indicador_tamano",
@@ -66,7 +69,8 @@ ui <- fluidPage(tags$head(tags$script('
                            ) %>%
                            pull(nomindicador))),
       
-      #uiOutput("selectcorte3"),
+      uiOutput("selectcorte_tamano"),
+      uiOutput("rango_tamano"),
       
       
       tags$a(href="https://umad.cienciassociales.edu.uy/", 
@@ -83,7 +87,16 @@ ui <- fluidPage(tags$head(tags$script('
       
       
     )),
-    mainPanel(tags$h4(style="display:inline-block",
+    mainPanel(
+      tags$style(type="text/css",
+                 
+                 ".shiny-output-error { visibility: hidden; }",
+                 
+                 ".shiny-output-error:before { visibility: hidden; }"
+                 
+      ),
+      
+      tags$h4(style="display:inline-block",
                       uiOutput("title_tamano")),
               plotly::plotlyOutput("plot_tamano",height = 'auto', width = 'auto'),
               br(),
@@ -112,7 +125,7 @@ ui <- fluidPage(tags$head(tags$script('
    title = "Estructura",
    value = 'borelito',
    br(),
-   div( id ="Sidebar",sidebarPanel(
+   div( id ="Sidebar",sidebarPanel(width = 3,
      #style = "position:fixed;width:22%;",
      selectInput(
        "indicador_estructura",
@@ -378,137 +391,123 @@ server <- function(session, input, output) {
   
 
 
-  # output$selectcorte1 <- renderUI({
-  #   selectInput("corte1", "Resultados por:", choices = unique(df_id_tp$corte_nueva[df_id_tp$nomindicador ==input$indicador_id_tp]))
-  # })
-  
-  output$selectcorte1 <- renderUI({
-    selectInput("corte1", "Resultados por:", choices = base_id_tp()  %>% pull(corte_nueva) %>% unique())
-  })
-  
-  output$selectcorte2 <- renderUI({
-    selectInput("corte2", "Resultados por:", choices = base_id_pu()  %>% pull(corte_nueva) %>% unique())
-  })
 
-  output$selectcorte3 <- renderUI({
-    selectInput("corte3", "Resultados por:", choices = base_p()  %>% pull(corte_nueva) %>% unique())
-  })
   
-  output$selectcorte4 <- renderUI({
-    selectInput("corte4", "Resultados por:", choices = base_nbi_p()  %>% pull(corte_nueva) %>% unique())
-  }) 
-  output$selectcorte5 <- renderUI({
-    selectInput("corte5", "Resultados por:", choices = base_nbi_h()  %>% pull(corte_nueva) %>% unique())
-  }) 
-
-
+  ##filto indicador
   base_tamano <- reactive({
     
-     df_generica %>%
-    filter(nomindicador == "Población total - proyecciones"  | 
-             nomindicador == "Población por edades quinquenales - proyecciones"|
-             nomindicador == "Población departamental (censos)"|
-             nomindicador == "Población departamental - porcentaje (censos)"|
-             nomindicador == "Población  departamental censada por edades quinquenales y sexo, Censo 2011"
-    )
+    df_generica %>%
+      filter(nomindicador == input$indicador_tamano)
+    
+  })
   
+  ##corte
+  output$selectcorte_tamano <- renderUI({
+    selectInput("corte_tamano", "Resultados por:", choices = base_tamano()  %>% pull(corte) %>% unique())
+  })
+  
+  ##años
+  
+  output$rango_tamano <- renderUI({
+    
+    if(input$indicador_tamano == "Población total - proyecciones"){
+    
+      sliderInput("rango_tamano", 
+                label = "Rango de tiempo", 
+                sep = "",
+                dragRange = T,
+                min = min(base_tamano()$fecha), 
+                max = max(base_tamano()$fecha), 
+                value = c(min(base_tamano()$fecha), 
+                          max(base_tamano()$fecha)))
+
+      
+    }else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones"|
+             input$indicador_tamano == "Población departamental (censos)"){
+      
+     selectInput("rango_tamano_ano",
+                 label = "Años",
+                 choices = unique(base_tamano()$fecha))
+       
+  
+    }
+      })
+  
+  base_tamano_rango <- reactive({
+    
+    req(input$rango_tamano)
+    
+  base_tamano() %>%
+      filter(fecha >= input$rango_tamano[1] &
+               fecha <= input$rango_tamano[2])
   })
   
   
-base_id_tp <- reactive({
-
-  df_generica %>%
-     filter(categoria == "Ingresos y desigualdad"&pestana=="Total País",
-            nomindicador == input$indicador_id_tp) %>%
-  mutate(valor = round(valor))
-
-})
-
-base_id_pu <- reactive({
   
-  df_generica %>%
-    filter(categoria == "Ingresos y desigualdad"&pestana=="País Urbano",
-           nomindicador == input$indicador_id_pu)%>%
-    mutate(valor = round(valor))
-  
+output$title_indicador_tamano <- renderUI({ 
+  helpText(HTML(unique(base_tamano()$nomindicador)))
 })
 
 
-output$title_indicador_id_tp <- renderUI({ 
-  helpText(HTML(unique(base_id_tp()$nomindicador)))
-})
 
-output$title_indicador_id_pu <- renderUI({ 
-  helpText(HTML(unique(base_id_pu()$nomindicador)))
-})
+output$plot_tamano <- plotly::renderPlotly({
 
-output$title_indicador_p <- renderUI({ 
-  helpText(HTML(unique(base_p()$nomindicador)))
-})
+  if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Total") {
 
-
-output$title_indicador_nbi_p <- renderUI({ 
-  helpText(HTML(unique(base_nbi_p()$nomindicador)))
-})
-
-output$title_indicador_nbi_h <- renderUI({ 
-  helpText(HTML(unique(base_nbi_h()$nomindicador)))
-})
-
-
-output$plot_id_tp <- plotly::renderPlotly({
-
-  if(input$corte1 == "Región") {
-
-    g1 <- base_id_tp() %>%
-      filter(corte_nueva == "Región") %>%
-      ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor, color = urbanoruraluy, group = urbanoruraluy)) +
-      geom_line(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(4,name="Blues")))+
-      scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
-      theme(axis.text = element_text(size = 8))+
-      labs(color = "",
-           x = "Año",
-           y = "")
+    g1 <- base_tamano_rango() %>%
+      filter(corte == input$corte_tamano) %>%
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=corte,group = corte, text = paste("</br>Año:",fecha,"</br>Valor:",valor)))+ 
+      geom_line(size = 1, color="#3182BD") +
+      geom_point(size = 1) +
+      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
+      theme(axis.text = element_text(size = 8),legend.position = "none")+
+      labs(x = "",
+           y = "",
+           title = input$indicador_tamano,
+           caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR)")
     
     plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("valor"))%>%
+                     hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
                                    x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
     
-      plotly::config(displayModeBar = TRUE,
-      modeBarButtonsToRemove = list(
-        "pan2d",
-        "autoScale2d",
-        "resetScale2d",
-        "hoverClosestCartesian",
-        "hoverCompareCartesian",
-        "sendDataToCloud",
-        "toggleHover",
-        "resetViews",
-        "toggleSpikelines",
-        "resetViewMapbox"
-      ),showLink = FALSE,
-      displaylogo = FALSE)
 
 
 
-  } else if(input$corte1 == "Sexo del jefe(a)"){
+  } else if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Sexo"){
 
-    g1 <- base_id_tp() %>%
-      filter(corte_nueva == "Sexo del jefe(a)") %>%
-      ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor, color = sexojefatura, group = sexojefatura)) +
+    g1 <- base_tamano_rango() %>%
+      filter(corte == input$corte_tamano) %>%
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",valor))) +
       geom_line(size = 1) +
+      geom_point(size = 1) +
       scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
-      scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
+      scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
       theme(axis.text.y  = element_text(size = 8),legend.position = "bottom")+
-      labs(color = "",
-           x = "Año",
-           y = "")
-
-    plotly::ggplotly(g1, width = (0.85*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("valor"))%>%
+      labs(x = "",
+           y = "",
+           title = input$indicador_tamano,
+           caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR)")
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
                                    x = 0.5,y=-0.2)) %>%
@@ -528,21 +527,49 @@ output$plot_id_tp <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
 
-  } else if (input$corte1 == "Pobreza") {
-
-    g1 <- base_id_tp() %>%
-      filter(corte_nueva == "Pobreza") %>%
-      ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor, color = pobreza, group = pobreza)) +
-      geom_line(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(2,name="Blues")))+
-      scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
-      theme(axis.text = element_text(size = 8),legend.position = "bottom")+
-      labs(color = "",
-           x = "Año",
-           y = "")
-
-    plotly::ggplotly(g1, width = (0.85*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("valor"))%>%
+  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Sexo"){
+    
+    piramide = base_tamano_rango() %>%
+      filter(fecha == input$rango_tamano_ano & corte == input$corte_tamano)%>%
+      mutate(edad = gsub("años de edad","",edad))
+    
+    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
+                                                "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
+                                                "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
+                                                "75-79 ","80-84 ","85-89 ","90 y más "))
+    
+    g1 <- piramide %>%
+      ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha,"</br>Valor:",valor)))) +
+      geom_col(data = filter(piramide, 
+                             sexo == "varones"), 
+               aes(y = round(-1*valor*100,2))) +
+      geom_col(data = filter(piramide, 
+                             sexo == "mujeres"), 
+               aes(y = round(valor*100,2))) +  
+      expand_limits(y = c(-50, 50)) +
+      scale_y_continuous(breaks = seq(-50, 50, by = 10),
+                         labels = abs) + 
+      scale_fill_manual(name = "Sexo",
+                        values = c("varones" = "#C6DBEF",
+                                   "mujeres" = "#2171B5")) +
+      coord_flip() +
+      theme(legend.title = element_blank(),
+            legend.position = "bottom",
+            axis.text.y = element_text(size=7),
+            axis.text.x =element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            strip.text.x = element_text(size = 8),
+            plot.title = element_text(size=13),
+            plot.caption = element_text(size=9,face = "italic",hjust = 0)
+            
+      )+labs(
+        x = "",
+        y = "",
+        caption = "")
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
                                    x = 0.5,y=-0.2)) %>%
@@ -561,92 +588,43 @@ output$plot_id_tp <- plotly::renderPlotly({
                        "resetViewMapbox"
                      ),showLink = FALSE,
                      displaylogo = FALSE)
-
-    }   else if (input$corte1 == "Decil de ingreso") {
-
-      g1 <- base_id_tp() %>%
-        filter(corte_nueva == "Decil de ingreso") %>%
-        ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor, color = decil, group = decil)) +
-        facet_wrap(~ urbanoruraluy)+
-        geom_line(size = 1) +
-        scale_color_manual(values=c("#041c40",rev(RColorBrewer::brewer.pal(9,name="Blues"))))+
-        scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
-        theme(axis.text = element_text(size = 8),legend.position = "bottom")+
-        labs(color = "",
-             x = "Año",
-             y = "")
-
-      plotly::ggplotly(g1, width = (0.85*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                       hoverinfo = 'text',tooltip = c("valor"))%>%
-        plotly::layout(legend = list(orientation = "h",   
-                                     xanchor = "center",  
-                                     x = 0.5,y=-0.2)) %>%
-        
-        plotly::config(displayModeBar = TRUE,
-                       modeBarButtonsToRemove = list(
-                         "pan2d",
-                         "autoScale2d",
-                         "resetScale2d",
-                         "hoverClosestCartesian",
-                         "hoverCompareCartesian",
-                         "sendDataToCloud",
-                         "toggleHover",
-                         "resetViews",
-                         "toggleSpikelines",
-                         "resetViewMapbox"
-                       ),showLink = FALSE,
-                       displaylogo = FALSE)
-
-    } else if (input$corte1 == "Quintil de ingreso") {
-
-      g1 <- base_id_tp() %>%
-        filter(corte_nueva == "Quintil de ingreso") %>%
-        ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor, color = quintil, group = quintil)) +
-        facet_wrap(~ urbanoruraluy)+
-        geom_line(size = 1) +
-        scale_color_manual(values=rev(RColorBrewer::brewer.pal(5,name="Blues")))+
-        scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
-        theme(axis.text = element_text(size = 8),legend.position = "bottom")+
-        labs(color = "",
-             x = "Año",
-             y = "")
-
-      plotly::ggplotly(g1, width = (0.85*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                       hoverinfo = 'text',tooltip = c("valor"))%>%
-        plotly::layout(legend = list(orientation = "h",   
-                                     xanchor = "center",  
-                                     x = 0.5,y=-0.2)) %>%
-        
-        plotly::config(displayModeBar = TRUE,
-                       modeBarButtonsToRemove = list(
-                         "pan2d",
-                         "autoScale2d",
-                         "resetScale2d",
-                         "hoverClosestCartesian",
-                         "hoverCompareCartesian",
-                         "sendDataToCloud",
-                         "toggleHover",
-                         "resetViews",
-                         "toggleSpikelines",
-                         "resetViewMapbox"
-                       ),showLink = FALSE,
-                       displaylogo = FALSE)
-
-
-  }
-  else {
-
-    g1 <- base_id_tp() %>%
-      filter(corte_nueva=="Total") %>%
-      ggplot(aes(as.Date(as.character(anio), format = "%Y"), valor)) +
-      geom_line(size = 1,color="#3182BD") +
-      scale_x_date(date_breaks = "3 years",date_labels  = "%Y")+
-      theme(axis.text = element_text(size = 8),legend.position = "bottom")+
-      labs(x = "Año",
-           y = "")
-
-    plotly::ggplotly(g1, width = (0.85*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("valor"))%>%
+    
+  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Total"){
+    
+    piramide = base_tamano_rango() %>%
+      filter(fecha == input$rango_tamano_ano & corte == input$corte_tamano )%>%
+      mutate(edad = gsub("años de edad","",edad))
+    
+    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
+                                                    "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
+                                                    "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
+                                                    "75-79 ","80-84 ","85-89 ","90 y más "))
+    
+    g1 <- piramide %>%
+      ggplot(aes(x = edad, text=paste(paste("</br>Año:",fecha,"</br>Valor:",valor)))) +
+      geom_col(data = piramide, 
+               aes(y = round(valor,2)),fill="#3182BD") +
+      expand_limits(y = c(-50, 50)) +
+      scale_y_continuous(breaks = seq(-50, 50, by = 10),
+                         labels = abs) + 
+      coord_flip() +
+      theme(legend.title = element_blank(),
+            legend.position = "none",
+            axis.text.y = element_text(size=7),
+            axis.text.x =element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            strip.text.x = element_text(size = 8),
+            plot.title = element_text(size=13),
+            plot.caption = element_text(size=9,face = "italic",hjust = 0)
+            
+      )+labs(
+        x = "",
+        y = "",
+        caption = "")
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
                                    x = 0.5,y=-0.2)) %>%
@@ -665,8 +643,107 @@ output$plot_id_tp <- plotly::renderPlotly({
                        "resetViewMapbox"
                      ),showLink = FALSE,
                      displaylogo = FALSE)
-
-  }
+    
+  } else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Total"){
+    
+    
+    mapa = base_tamano() %>%
+      filter(fecha == input$rango_tamano_ano & corte == input$corte_tamano )%>%
+      mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
+                                                          id = "Latin-ASCII")))
+    
+    mapa_geo = depto %>%
+      left_join(mapa,by = "nombre") 
+    
+    g1 <- ggplot(mapa_geo,aes(fill = valor)) + geom_sf() +
+      geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
+      scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
+      labs(x = "",
+           y = "",
+           caption = "")+
+      theme(
+        axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.text = element_blank(),
+        legend.title = element_blank(),
+        panel.grid.major = element_line(colour = "transparent"))
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
+      plotly::layout(legend = list(orientation = "h",   
+                                   xanchor = "center",  
+                                   x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
+    
+  } else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Sexo"){
+    
+    
+    mapa = base_tamano() %>%
+      filter(fecha == input$rango_tamano_ano & corte == input$corte_tamano )%>%
+      mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
+                                                          id = "Latin-ASCII")))
+    
+    mapa_geo = depto %>%
+      left_join(mapa,by = "nombre") 
+    
+    g1 <- ggplot(mapa_geo,aes(fill = valor)) + geom_sf() +
+      geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
+      scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
+      facet_wrap(~sexo,ncol=2)+
+      labs(x = "",
+           y = "",
+           caption = "")+
+      theme(
+        axis.line = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.text = element_blank(),
+        legend.title = element_blank(),
+        panel.grid.major = element_line(colour = "transparent"))
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
+      plotly::layout(legend = list(orientation = "h",   
+                                   xanchor = "center",  
+                                   x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
+    
+  } 
 
 })
 
