@@ -79,3 +79,7 @@ theme_ggparliament_bdd <- function(legend = TRUE,
   basic_theme
 }  
 
+wrapit <- function(x) {
+  wtext <- paste(strwrap(x, width = 120), collapse=" \n ")
+  return(wtext)
+}
