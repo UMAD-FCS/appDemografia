@@ -1,0 +1,12 @@
+name: appDemografia
+title: appDemografia
+username:
+account: bancodedatos-fcs
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4880963
+bundleId: 5143211
+url: https://bancodedatos-fcs.shinyapps.io/appDemografia/
+when: 1634320222.1347
+asMultiple: FALSE
+asStatic: FALSE

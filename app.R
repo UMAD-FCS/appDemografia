@@ -37,7 +37,7 @@ source('utils.R')
 
 df_generica <- readxl::read_excel("Base_Motor_Demografica.xls") %>% 
   janitor::clean_names() %>% 
-  select(- x1,- x2,- codind, - responsable,-corte) 
+  select(- x1,- x2,- codind, - responsable) 
 
 depto=geouy::load_geouy("Departamentos")
 
@@ -1388,7 +1388,7 @@ output$plot_estructura <- plotly::renderPlotly({
       geom_point(size = 1) +
       scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      theme_minimal()+
+      
       theme(axis.text = element_text(size = 8),legend.position = "none")+
       
       labs(x = "",
