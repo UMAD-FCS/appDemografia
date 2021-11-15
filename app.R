@@ -18,6 +18,7 @@ library(viridis)
 library(ggrepel)
 library(tidyverse)
 library(wrapr)
+library(shinycssloaders)
 
 
 source('utils.R')
@@ -27,21 +28,20 @@ source('utils.R')
 ##Ficha metodológica (ver compatibiidad de nombres)
 
 
-# base_fichas <- readxl::read_excel("Base_Fichas_Tecnicas.xls")%>% 
-#   janitor::clean_names() %>% 
-#   mutate(nomindicador=replace(nomindicador, nomindicador=="Relación entre el ingreso medio per cápita del primer y décimo decil", 
-#                               "Relación entre el Ingreso medio per cápita del primer y décimo decil"))%>%
-#   mutate(nomindicador=replace(nomindicador, nomindicador=="Relación entre el ingreso medio per cápita del primer y quinto quintil", 
-#                               "Relación entre el Ingreso medio per cápita del primer y quinto quintil")) 
-# 
+base_fichas <- readxl::read_excel("Base_Motor_Demografica.xls",sheet = "LISTA INDICS CARGADOS")%>%
+  janitor::clean_names() 
+
 
 df_generica <- readxl::read_excel("Base_Motor_Demografica.xls") %>% 
   janitor::clean_names() %>% 
-  select(- x1,- x2,- codind, - responsable) 
+  select(- x1,- x2,- codind, - responsable) %>%
+  left_join(.,base_fichas[,c("nomindicador","definicion","forma_de_calculo")],by="nomindicador")
 
 depto=geouy::load_geouy("Departamentos")
 
 #df_generica$fecha=as.character(df_generica$fecha)                   
+
+
 
 
 ui <- fluidPage(tags$head(tags$script('
@@ -110,7 +110,28 @@ ui <- fluidPage(tags$head(tags$script('
       
       tags$h4(style="display:inline-block",
                       uiOutput("title_tamano")),
-              plotly::plotlyOutput("plot_tamano",height = 'auto', width = 'auto'),
+      
+      div(style="display:inline-block", 
+          dropdown(
+            style = "minimal",
+            status = "primary",
+            width = "400px",
+            right = TRUE,
+            icon = icon("info", lib = "font-awesome"),
+            uiOutput("def_tamano"))
+      ),
+      div(style="display:inline-block", 
+          dropdown(
+            style = "minimal",
+            status = "primary",
+            width = "400px",
+            right = TRUE,
+            icon = icon("calculator", lib = "font-awesome"),
+            uiOutput("info_tamano"))
+      ),
+      br(),
+      br(),
+      plotly::plotlyOutput("plot_tamano",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE),
              tags$h6(style="display:inline-block",
               uiOutput("fuente_tamano")),
               br(),
@@ -180,6 +201,26 @@ ui <- fluidPage(tags$head(tags$script('
      
      tags$h4(style="display:inline-block",
              uiOutput("title_estructura")),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("info", lib = "font-awesome"),
+           uiOutput("def_estructura"))
+     ),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("calculator", lib = "font-awesome"),
+           uiOutput("info_estructura"))
+     ),
+     br(),
+     br(),
      plotly::plotlyOutput("plot_estructura",height = 'auto', width = 'auto'),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_estructura")),
@@ -206,7 +247,6 @@ ui <- fluidPage(tags$head(tags$script('
        choices = unique(df_generica %>%
                           filter(nomindicador == "Nacimientos anuales"  | 
                                    nomindicador == "Tasa Global de Fecundidad"|
-                                   nomindicador == "Tasa de fecundidad adolescente (por mil)"|
                                    nomindicador == "Edad media de la fecundidad"|
                                    nomindicador == "Nacimientos según departamento de residencia materna"|
                                    nomindicador == "Tasa global de fecundidad por departamento al 30 de junio de cada año (1996-2025)"|
@@ -246,6 +286,26 @@ ui <- fluidPage(tags$head(tags$script('
      
      tags$h4(style="display:inline-block",
              uiOutput("title_fecundidad")),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("info", lib = "font-awesome"),
+           uiOutput("def_fecundidad"))
+     ),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("calculator", lib = "font-awesome"),
+           uiOutput("info_fecundidad"))
+     ),
+     br(),
+     br(),
      plotly::plotlyOutput("plot_fecundidad",height = 'auto', width = 'auto'),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_fecundidad")),
@@ -308,6 +368,26 @@ ui <- fluidPage(tags$head(tags$script('
      
      tags$h4(style="display:inline-block",
              uiOutput("title_mortalidad")),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("info", lib = "font-awesome"),
+           uiOutput("def_mortalidad"))
+     ),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("calculator", lib = "font-awesome"),
+           uiOutput("info_mortalidad"))
+     ),
+     br(),
+     br(),
      plotly::plotlyOutput("plot_mortalidad",height = 'auto', width = 'auto'),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_mortalidad")),
@@ -369,6 +449,27 @@ ui <- fluidPage(tags$head(tags$script('
      
      tags$h4(style="display:inline-block",
              uiOutput("title_migracion")),
+     
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("info", lib = "font-awesome"),
+           uiOutput("def_migracion"))
+     ),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("calculator", lib = "font-awesome"),
+           uiOutput("info_migracion"))
+     ),
+     br(),
+     br(),
      plotly::plotlyOutput("plot_migracion",height = 'auto', width = 'auto'),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_migracion")),
@@ -377,6 +478,92 @@ ui <- fluidPage(tags$head(tags$script('
      DTOutput("tabla_migracion"),
      br(),
      downloadButton("tabla_resultado_migracion_descarga", "Descargá la tabla"),
+     br(),
+     br(),
+     
+   )
+ ),
+ tabPanel(
+   title = "NBI",
+   value = 'borelito',
+   br(),
+   div( id ="Sidebar",sidebarPanel(
+     #style = "position:fixed;width:22%;",
+     selectInput(
+       "indicador_nbi",
+       "Seleccione el indicador:",
+       choices = unique(df_generica %>%
+                          filter(nomindicador == "Porcentaje de personas afrodescendientes  con al menos una NBI  según departamento. Censo 2011"  | 
+                                   nomindicador == "Porcentaje de personas no afrodescendientes  con al menos una NBI  según  departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas entre 0 y 14 años con al menos una NBI según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en Vivienda decorosa según  departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en abastecimiento de agua potable según  departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en servicio higiénico según  departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en energía eléctrica según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en artefactos básicos de confort según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en educación según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en hacinamiento según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en cocina según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en calefacción según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en conservación de alimentos según departamento. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño, según departamento. Censo 2011"
+                          )%>%
+                          pull(nomindicador))),
+     
+     tags$a(href="https://umad.cienciassociales.edu.uy/", 
+            "Unidad de Métodos y Acceso a Datos",
+            style = "font-size:12px; color:Navy;
+                             text-decoration:underline;"),
+     br(),
+     br(),
+     img(src = "logo_umad.png", height="70%",
+         width = "70%", align = "left"),
+     br(),
+     br()
+     
+     
+     
+   )),
+   mainPanel(
+     tags$style(type="text/css",
+                
+                ".shiny-output-error { visibility: hidden; }",
+                
+                ".shiny-output-error:before { visibility: hidden; }"
+                
+     ),
+     
+     tags$h4(style="display:inline-block",
+             uiOutput("title_nbi")),
+     
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("info", lib = "font-awesome"),
+           uiOutput("def_nbi"))
+     ),
+     div(style="display:inline-block", 
+         dropdown(
+           style = "minimal",
+           status = "primary",
+           width = "400px",
+           right = TRUE,
+           icon = icon("calculator", lib = "font-awesome"),
+           uiOutput("info_nbi"))
+     ),
+     br(),
+     br(),
+     plotly::plotlyOutput("plot_nbi",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE),
+     tags$h6(style="display:inline-block",
+             uiOutput("fuente_nbi")),
+     br(),
+     br(),
+     DTOutput("tabla_nbi"),
+     br(),
+     downloadButton("tabla_resultado_nbi_descarga", "Descargá la tabla"),
      br(),
      br(),
      
@@ -499,6 +686,19 @@ output$fuente_tamano <- renderUI({
   helpText(HTML(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a",
                       unique(base_tamano()$fuente))))
 })
+
+# Info: forma de CALCULO
+output$info_tamano <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_tamano()$forma_de_calculo))))
+  
+})
+
+# Definición:
+output$def_tamano <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_tamano()$definicion))))
+})
+
 
 output$plot_tamano <- plotly::renderPlotly({
 
@@ -1372,7 +1572,17 @@ output$fuente_estructura <- renderUI({
 })
 
 
+# Info: forma de CALCULO
+output$info_estructura <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_estructura()$forma_de_calculo))))
+  
+})
 
+# Definición:
+output$def_estructura <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_estructura()$definicion))))
+})
 
 
 
@@ -1543,6 +1753,18 @@ output$fuente_fecundidad <- renderUI({
                       unique(base_fecundidad()$fuente))))
 })
 
+
+# Info: forma de CALCULO
+output$info_fecundidad <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_fecundidad()$forma_de_calculo))))
+  
+})
+
+# Definición:
+output$def_fecundidad <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_fecundidad()$definicion))))
+})
 
 
 
@@ -1822,6 +2044,18 @@ output$fuente_mortalidad <- renderUI({
                       unique(base_mortalidad()$fuente))))
 })
 
+
+# Info: forma de CALCULO
+output$info_mortalidad <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_mortalidad()$forma_de_calculo))))
+  
+})
+
+# Definición:
+output$def_mortalidad <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_mortalidad()$definicion))))
+})
 
 
 
@@ -2265,6 +2499,19 @@ output$fuente_migracion <- renderUI({
 })
 
 
+# Info: forma de CALCULO
+output$info_migracion <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_migracion()$forma_de_calculo))))
+  
+})
+
+# Definición:
+output$def_migracion <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_migracion()$definicion))))
+})
+
+
 output$plot_migracion <- plotly::renderPlotly({
   
   
@@ -2460,6 +2707,141 @@ output$tabla_resultado_migracion_descarga <- downloadHandler(
   
   
 })
+
+
+
+##NBI
+
+
+
+##filtro indicador
+
+base_nbi <- reactive({
+  
+  df_generica %>%
+    filter(nomindicador == input$indicador_nbi)
+  
+})
+
+
+
+output$title_nbi <- renderUI({ 
+  helpText(HTML(unique(base_nbi()$nomindicador)))
+})
+
+output$fuente_nbi <- renderUI({ 
+  helpText(HTML(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a",
+                      unique(base_nbi()$fuente))))
+})
+
+
+# Info: forma de CALCULO
+output$info_nbi <- renderUI({ 
+  helpText(HTML(paste("<b>Forma de cálculo:</b>", 
+                      unique(base_nbi()$forma_de_calculo))))
+  
+})
+
+# Definición:
+output$def_nbi <- renderUI({ 
+  helpText(HTML(paste("<b>Definición:</b>", unique(base_nbi()$definicion))))
+})
+
+
+output$plot_nbi <- plotly::renderPlotly({
+  
+  
+  mapa = base_nbi() %>%
+    mutate(nombre = toupper(stringi::stri_trans_general(str = pais, 
+                                                        id = "Latin-ASCII")))
+  
+  mapa_geo = depto %>%
+    left_join(mapa,by = "nombre") 
+  
+  g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",pais,"</br>Valor:",round(valor,1)))) + geom_sf() +
+    geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
+    scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
+    labs(x = "",
+         y = "",
+         caption = "")+
+    theme_minimal()+
+    theme(
+      axis.line = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.text = element_blank(),
+      legend.title = element_blank(),
+      panel.grid.major = element_line(colour = "transparent"))
+  
+  
+  plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+                   hoverinfo = 'text',tooltip = c("text"))%>%
+    plotly::layout(legend = list(orientation = "h",   
+                                 xanchor = "center",  
+                                 x = 0.5,y=-0.2)) %>%
+    
+    plotly::config(displayModeBar = TRUE,
+                   modeBarButtonsToRemove = list(
+                     "pan2d",
+                     "autoScale2d",
+                     "resetScale2d",
+                     "hoverClosestCartesian",
+                     "hoverCompareCartesian",
+                     "sendDataToCloud",
+                     "toggleHover",
+                     "resetViews",
+                     "toggleSpikelines",
+                     "resetViewMapbox"
+                   ),showLink = FALSE,
+                   displaylogo = FALSE)
+  
+  
+})
+
+
+
+output$tabla_nbi <- renderDT({
+  
+    
+    datatable(base_nbi() %>%
+                transmute(
+                  "Indicador" = nomindicador,
+                  "Año" = fecha,
+                  "Área geográfica" = pais,
+                  "Valor" = round(valor,1)),
+              rownames = FALSE,
+              options = list(columnDefs = 
+                               list(list(className = 'dt-center', 
+                                         targets = "_all"))))
+ 
+  
+})
+
+
+output$tabla_resultado_nbi_descarga <- downloadHandler(
+  
+  filename = function() {
+    paste0(input$indicador_nbi, ".xlsx", sep = "")
+  },
+  content = function(file) {
+    
+      
+      openxlsx::write.xlsx(base_nbi() %>%
+                             transmute(
+                               "Indicador" = nomindicador,
+                               "Año" = fecha,
+                               "Área geográfica" = pais,
+                               "Valor" = round(valor,1)),file,
+                           row.names = FALSE)
+      
+    
+  })
+
+
+
 
 
 
