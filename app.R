@@ -2758,8 +2758,8 @@ output$plot_nbi <- plotly::renderPlotly({
   mapa_geo = depto %>%
     left_join(mapa,by = "nombre") 
   
-  g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",pais,"</br>Valor:",round(valor,1)))) + geom_sf() +
-    geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
+  g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",pais,"</br>Valor:",paste0(round(valor,1),"%")))) + geom_sf() +
+    geom_sf_text(aes(label = paste0(round(valor,1),"%")), colour = "black",size=3,fontface = "bold")+
     scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
     labs(x = "",
          y = "",
