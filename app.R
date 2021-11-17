@@ -1820,8 +1820,8 @@ output$plot_fecundidad <- plotly::renderPlotly({
       geom_point(size = 1) +
       scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      theme(axis.text = element_text(size = 8),legend.position = "none")+
       theme_minimal()+
+      theme(axis.text = element_text(size = 8),legend.position = "none")+
       labs(x = "",
            y = "")
     

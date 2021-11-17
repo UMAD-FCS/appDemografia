@@ -5,8 +5,8 @@ account: bancodedatos-fcs
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4880963
-bundleId: 5254894
+bundleId: 5263511
 url: https://bancodedatos-fcs.shinyapps.io/appDemografia/
-when: 1637001362.45955
+when: 1637176675.63788
 asMultiple: FALSE
 asStatic: FALSE
