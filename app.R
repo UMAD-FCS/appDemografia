@@ -155,10 +155,7 @@ ui <- fluidPage(tags$head(tags$script('
        "indicador_estructura",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
-                          filter(nomindicador == "Relación de dependencia total (niños y ancianos por cada 100 personas de 15 a 64 años) por Departamento a 30 de junio de cada año"  | 
-                                   nomindicador == "Porcentaje de población menor de 15 años por departamento a 30 de junio de cada año"|
-                                   nomindicador == "Porcentaje de población de 15 a 64 años por departamento a 30 de junio de cada año"|
-                                   nomindicador == "Porcentaje de población de 65 y más años por departamento a 30 de junio de cada año"|
+                          filter(nomindicador == "Porcentaje de población de 65 y más años por departamento a 30 de junio de cada año"|
                                    nomindicador == "Relación de masculinidad (hombres cada 100 mujeres)"|
                                    nomindicador == "Relación de masculinidad de la población de 65 y más años"|
                                    nomindicador == "Porcentaje de población menor de 15 años"|
@@ -247,7 +244,6 @@ ui <- fluidPage(tags$head(tags$script('
        choices = unique(df_generica %>%
                           filter(nomindicador == "Nacimientos anuales"  | 
                                    nomindicador == "Tasa Global de Fecundidad"|
-                                   nomindicador == "Edad media de la fecundidad"|
                                    nomindicador == "Nacimientos según departamento de residencia materna"|
                                    nomindicador == "Tasa global de fecundidad por departamento al 30 de junio de cada año (1996-2025)"|
                                    nomindicador == "Tasa global de fecundidad total país  (1996-2050)"|
