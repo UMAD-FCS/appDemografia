@@ -1,9 +1,20 @@
 @font-face {
-  font-family: 'Titillium Web';
-  src: url('Titillium Web.ttf');
+    font-family: 'Titillium Web';
+    src: url('Titillium Web.ttf');
 }
 
 body {
   
   font-family: 'Titillium Web';
+}
+
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    background: #444444;
+    height: 100px;
+    font-family: 'Open Sans', sans-serif;
+    color: #FFFFFF;
+    padding: 20px;
 }

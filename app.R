@@ -1,14 +1,20 @@
 
+
+## ***************************************************************************
+## Shiny APP Demografía - Unidad de Métodos y Acceso a Datos
+## ***************************************************************************
+
+##  0. PAQUETES Y FUNCIONES  =================================================
+
+#extrafont::loadfonts(device = "win", quiet = T)
+
+
 library(tidyverse)
 library(labelled)
 library(DT)
 library(shiny)
 library(shinythemes)
 library(patchwork)
-library(here)
-library(DT)
-library(DT)
-library(shinythemes)
 library(here)
 library(plotly)
 library(shinyWidgets)
@@ -19,16 +25,57 @@ library(ggrepel)
 library(tidyverse)
 library(wrapr)
 library(shinycssloaders)
+library(bslib)
+library(RColorBrewer)
+library(viridis)
+library(sjmisc)
 
 
 source('utils.R')
 
-##Preparo bases
+theme_set(theme_bdd())
+
+update_geom_defaults("text", list(family = theme_get()$text$family))
+
+dir.create('~/.fonts')
+file.copy("www/Titillium Web.ttf", "~/.fonts")
+system('fc-cache -f ~/.fonts')
+
+color_defecto <- "#21618C"
+
+# Spinner options
+options(
+  spinner.color = "#476481",
+  spinner.color.background = "#ffffff",
+  spinner.size = 2
+)
+
+# Shiny app customized theme
+tema_umad <- bs_theme(
+  version = 5,
+  bg = "#FFFFFF",
+  fg = "#085792",
+  primary = "#3E6C9A",
+  sCP_compndary = "#3E6C9A",
+  base_font = font_google("Roboto"),
+  heading_font = font_google("Roboto"),
+  code_font = font_google("Space Mono")
+)
+
+# Colores
+vs_blues <- c("#031633", rev(brewer.pal(n = 9, "Blues")[3:9]))
+cat_palette <- c("#1F618D", "#5DADE2", "#16A085", "#9B59B6",
+                 "#F39C12", "#F4D03F", "#7F8C8D", "#BDC3C7", "#FF8484")
+vs_blues_2 <- c(vs_blues[4], vs_blues[7])
+
+
+
+##  1. PREPARAR DATA  =======================================================
 
 ##Ficha metodológica (ver compatibiidad de nombres)
 
 
-base_fichas <- readxl::read_excel("Base_Motor_Demografica.xls",sheet = "LISTA INDICS CARGADOS")%>%
+base_fichas <- readxl::read_excel("Base_Motor_Demografica_antes.xls",sheet = "LISTA INDICS CARGADOS")%>%
   janitor::clean_names() 
 
 
@@ -57,23 +104,159 @@ ui <- fluidPage(tags$head(tags$script('
                         Shiny.onInputChange("dimension", dimension);
                         });
                         ')), 
+                
+                tags$style(type="text/css",
+                           ".shiny-output-error { visibility: hidden; }",
+                           ".shiny-output-error:before { visibility: hidden; }"), # Quita mensajes de error (ojo)
+                
+                # Home page css
+                tags$style(".hr {border-top: 1px solid #D4D4D4;}"),
+                tags$style(".footer {left: 0;
+                      margin-top: -180px; /* negative value of footer height */
+	                    position:fixed;
+                      bottom: 0;
+                      width: 100%;
+                      height:150px;
+                      background-color: #FFFFFF;
+                      border-top: 1px solid #fff;
+                      text-align: center;
+                      padding-top: 30px;
+                  }"),
+                tags$style(".img_footer{padding-top: 10px; padding-right: 100px; padding-left: 100px;}"),
+                tags$style(".imgContainerFooter{padding-top: 20px; float: right;}"),
+                tags$style(".imgContainerFooter img {height: 40px; padding: 5px 5px 5px 5px;}"),
+                tags$style(".logoContainerFooter{padding-top: 0px;float: left;}"),
+                tags$style(".logoContainerFooter img {height: 50px;}"),
+                tags$style(".well {background-color: #D4E6F1;}"),
+                tags$style(".col-sm-2 {width: 16.66666667%; padding-top: 50px;}"),
+                tags$style(".body {font-family: 'Roboto'}"),
+                # Revisar
+                tags$style(".navbar {background-color: #FFF;
+             -webkit-transition: padding .3s;
+             -moz-transition: padding .3s;
+             transition: padding .3s;
+             border: none;}"),
+                tags$style(".wrapper {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}"),
+                tags$style(".container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}"),
+                tags$style(".body{flex-grow: 1;
+    overflow: auto;
+    min-height: 2em;
+}"),
+                tags$style("footer{flex-shrink: 0;}"),
+                tags$style(".fa-calculator {color:#21618C}"),
+                tags$style(".fa-exclamation {color:#21618C}"),
+                tags$style(".fa-clock {color:#21618C}"),              
+                
                 navbarPage(
-  theme = shinytheme("flatly"),
-  "Demografia",
-  collapsible=TRUE,
-  
-  
-  tabPanel(
+                  theme = tema_umad,
+                  "Demografía",
+                  collapsible=TRUE,
+                  tabPanel(
+                    
+                    #   2.0. HOME ----
+                    title = "Home",
+                    value = 'borelito',
+                    icon = icon("fas fa-home"),
+                    
+                    # Top layout
+                    HTML("<p><center><h2><b>¡Bienvenida/o a la app de datos sobre Demografía! &nbsp; &nbsp; <a href='https://umad.cienciassociales.edu.uy/'> <img src='umadlogo_2.png' width=160' height='80'> </a> </b></h2></p>"),
+                    
+                    # Border line
+                    hr(style = "border:1.5px solid #2c3e50"),
+                    
+                    fluidRow(
+                      br(),
+                      br(),
+                      column(width = 1),
+                      column(width = 5,
+                             tags$h4(style="color:#085792;text-align:justify;font-weight: bold;",
+                                     "Sobre la app"),
+                             tags$h6(style="color:#597ea2;text-align:justify;",
+                                     "Esta aplicación es parte del sistema de búsqueda y construcción personalizada de tablas y gráficos en base a motores generados desde bases consolidadas por los equipos de la UMAD."),
+                             # actionLink("link_elecciones", "Pestaña Elecciones"),
+                             HTML("<h6> <p style='color:#597ea2' align='justify'> El tablero incluye visualizaciones (gráficos, mapas) de los principales indicadores demográficos sobre estructura y tamaño poblacionales que surgen de las estadísticas nacionales y proyecciones (INE). Se presenta también información sobre fecundidad, mortalidad y migración. Por último, incluye indicadores de NBI que se desprenden del último censo poblacional disponible (2011).</p></h6>"),               
+                             # br(),
+                             # tags$h5(style="color:#085792;text-align:justify;font-weight: bold;",
+                             #         "¿Cómo citar?"),
+                             # tags$h6(style="color:#597ea2;text-align:justify;",
+                             #         paste("Datos electorales: Schmidt, Nicolás, Cardarello, Antonio, Luján, Diego",
+                             #               paste0("(", anio_pkg("Boreluy"), ")"),
+                             #               "Boreluy: Datos electorales de Uruguay 1910-2020, R package version", 
+                             #               packageVersion("Boreluy"), "https://nicolas-schmidt.github.io/Boreluy/.")),
+                             # tags$h6(style="color:#597ea2;text-align:justify;",
+                             #         paste("Datos de opinión pública: Schmidt, Nicolás, Vairo, Daniela, Opertti, Martín , UMAD",
+                             #               paste0("(", anio_pkg("opuy"), ")"),
+                             #               "opuy: Datos de Opinión Pública de Uruguay 1989 - 2020, R package version,", 
+                             #               packageVersion("opuy"), ", https://nicolas-schmidt.github.io/opuy/.")),
+                             # br(),
+                             tags$h6(style="color:#085792;text-align:left;font-weight: bold;",
+                                     "Mantenedor: Elina Gómez"),
+                             tags$h6(style="color:#085792;text-align:left;font-weight: bold;",
+                                     "Contacto: umad@cienciassociales.edu.uy"),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                      ),
+                      column(width = 1),
+                      column(width = 4,
+                             tags$h4(style="color:#009fe3;text-align:justify;font-weight: bold;",
+                                     "Sobre la UMAD"),
+                             tags$h6(style="color:#597ea2;text-align:justify;",
+                                     "La Unidad de Métodos y Acceso a Datos de la Facultad de Ciencias Sociales se constituye como un espacio de producción, organización y difusión de datos y abordajes metodológicos relativos a la realidad socioeconómica y política del país, la región y el mundo."),
+                             tags$h6(style="color:#597ea2;text-align:justify;",
+                                     "Lo hace ofreciendo a los usuarios un observatorio socioeconómico y político del Uruguay y de Uruguay en la Región y el Mundo, un sistema de búsqueda y construcción personalizada de tablas y gráficos en base a motores generados desde bases consolidadas por los equipos de la UMAD y un repositorio de acceso libre a micro-datos con sus fichas técnicas, metadatos y formularios así como vínculos a recursos nacionales e internacionales (motores de búsqueda de datos, sistemas de consulta y micro-datos)."),
+                             br(),
+                             tags$div(
+                               tags$h5(style="color:#085792;text-align:left;font-weight: bold;",
+                                       "Recursos relacionados:"),
+                               tags$ul(style="color:#597ea2;text-align:left;",
+                                       tags$li(tags$h6(tags$a(href="https://umad-fcs.github.io/Piso-I-Demografia/", "Indicadores demográficos del Uruguay"))),
+                                       tags$li(tags$h6(tags$a(href="https://umad-fcs.github.io/Piso-I-Pobreza/", "Indicadores Pobreza y desigualdad en Uruguay"))), 
+                                       tags$li(tags$h6(tags$a(href="https://bancodedatos-fcs.shinyapps.io/BdD-Pobreza/", "Tablero indicadores Pobreza y desigualdad"))), 
+                               )
+                             ),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                             br(),
+                      ),
+                      column(width = 1),
+                    ),
+                    div(class = "footer",
+                        includeHTML("html/footer.html"))
+                    
+                  ),             
+                  
+                  tabPanel(
     title = "Tamaño",
     value = 'borelito',
+    icon = icon("person", lib = "font-awesome"),
     br(),
-    div( id ="Sidebar",sidebarPanel(width = 3,
+    #div( id ="Sidebar",
+    fluidRow(    
+         sidebarPanel(width = 3,
       #style = "position:fixed;width:22%;",
       selectInput(
         "indicador_tamano",
         "Seleccione el indicador:",
         choices = unique(df_generica %>%
-                           filter(nomindicador == "Población total - proyecciones"  | 
+                           filter(nomindicador == "Proyecciones de población (INE)"  | 
                                     nomindicador == "Población por edades quinquenales - proyecciones"|
                                     nomindicador == "Población departamental (censos)"|
                                     nomindicador == "Población departamental - porcentaje (censos)"|
@@ -98,15 +281,15 @@ ui <- fluidPage(tags$head(tags$script('
       
       
       
-    )),
+    ),
     mainPanel(
-      tags$style(type="text/css",
-                 
-                 ".shiny-output-error { visibility: hidden; }",
-                 
-                 ".shiny-output-error:before { visibility: hidden; }"
-                 
-      ),
+      # tags$style(type="text/css",
+      #            
+      #            ".shiny-output-error { visibility: hidden; }",
+      #            
+      #            ".shiny-output-error:before { visibility: hidden; }"
+      #            
+      # ),
       
       tags$h4(style="display:inline-block",
                       uiOutput("title_tamano")),
@@ -131,7 +314,7 @@ ui <- fluidPage(tags$head(tags$script('
       ),
       br(),
       br(),
-      plotly::plotlyOutput("plot_tamano",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE),
+      plotly::plotlyOutput("plot_tamano",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
              tags$h6(style="display:inline-block",
               uiOutput("fuente_tamano")),
               br(),
@@ -143,15 +326,18 @@ ui <- fluidPage(tags$head(tags$script('
               br(),
               
     )
-  ),
+  )),
   
- tabPanel(
-   title = "Estructura",
-   value = 'borelito',
-   br(),
-   div( id ="Sidebar",sidebarPanel(width = 3,
-     #style = "position:fixed;width:22%;",
-     selectInput(
+  tabPanel(
+    title = "Estructura",
+    value = 'borelito',
+    icon = icon("chart-simple", lib = "font-awesome"),
+    br(),
+    #div( id ="Sidebar",
+    fluidRow(    
+      sidebarPanel(width = 3,
+                   #style = "position:fixed;width:22%;",
+                   selectInput(
        "indicador_estructura",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
@@ -186,7 +372,7 @@ ui <- fluidPage(tags$head(tags$script('
      
      
      
-   )),
+   ),
    mainPanel(
      tags$style(type="text/css",
                 
@@ -218,7 +404,7 @@ ui <- fluidPage(tags$head(tags$script('
      ),
      br(),
      br(),
-     plotly::plotlyOutput("plot_estructura",height = 'auto', width = 'auto'),
+     plotly::plotlyOutput("plot_estructura",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_estructura")),
      br(),
@@ -230,19 +416,22 @@ ui <- fluidPage(tags$head(tags$script('
      br(),
      
    )
- ),
+ )),
  
  tabPanel(
    title = "Fecundidad",
    value = 'borelito',
+   icon = icon("person-pregnant", lib = "font-awesome"),
    br(),
-   div( id ="Sidebar",sidebarPanel(
-     #style = "position:fixed;width:22%;",
-     selectInput(
+   #div( id ="Sidebar",
+   fluidRow(    
+     sidebarPanel(width = 3,
+                  #style = "position:fixed;width:22%;",
+                  selectInput(
        "indicador_fecundidad",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
-                          filter(nomindicador == "Nacimientos anuales"  | 
+                          filter(nomindicador == "Nacimientos"  | 
                                    nomindicador == "Tasa Global de Fecundidad"|
                                    nomindicador == "Nacimientos según departamento de residencia materna"|
                                    nomindicador == "Tasa global de fecundidad por departamento al 30 de junio de cada año (1996-2025)"|
@@ -270,7 +459,7 @@ ui <- fluidPage(tags$head(tags$script('
      
      
      
-   )),
+   ),
    mainPanel(
      tags$style(type="text/css",
                 
@@ -302,7 +491,7 @@ ui <- fluidPage(tags$head(tags$script('
      ),
      br(),
      br(),
-     plotly::plotlyOutput("plot_fecundidad",height = 'auto', width = 'auto'),
+     plotly::plotlyOutput("plot_fecundidad",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_fecundidad")),
      br(),
@@ -314,23 +503,26 @@ ui <- fluidPage(tags$head(tags$script('
      br(),
      
    )
- ),
+ )),
  
  tabPanel(
    title = "Mortalidad",
    value = 'borelito',
+   icon = icon("cross", lib = "font-awesome"),
    br(),
-   div( id ="Sidebar",sidebarPanel(
-     #style = "position:fixed;width:22%;",
-     selectInput(
+   #div( id ="Sidebar",
+   fluidRow(    
+     sidebarPanel(width = 3,
+                  #style = "position:fixed;width:22%;",
+                  selectInput(
        "indicador_mortalidad",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
                           filter(nomindicador == "Esperanza de vida al nacer (1996-2050)"  | 
                                    nomindicador == "Esperanza de vida al nacer por departamento (1996-2050)"|
-                                   nomindicador == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2020"|
-                                   nomindicador == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2020"|
-                                   nomindicador == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2020"
+                                   nomindicador == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
+                                   nomindicador == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
+                                   nomindicador == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"
                           )%>%
                           pull(nomindicador))),
      
@@ -352,7 +544,7 @@ ui <- fluidPage(tags$head(tags$script('
      
      
      
-   )),
+   ),
    mainPanel(
      tags$style(type="text/css",
                 
@@ -384,7 +576,7 @@ ui <- fluidPage(tags$head(tags$script('
      ),
      br(),
      br(),
-     plotly::plotlyOutput("plot_mortalidad",height = 'auto', width = 'auto'),
+     plotly::plotlyOutput("plot_mortalidad",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_mortalidad")),
      br(),
@@ -396,15 +588,18 @@ ui <- fluidPage(tags$head(tags$script('
      br(),
      
    )
- ),
+ )),
  
  tabPanel(
    title = "Migración",
    value = 'borelito',
+   icon = icon("plane-departure", lib = "font-awesome"),
    br(),
-   div( id ="Sidebar",sidebarPanel(
-     #style = "position:fixed;width:22%;",
-     selectInput(
+   #div( id ="Sidebar",
+   fluidRow(    
+     sidebarPanel(width = 3,
+                  #style = "position:fixed;width:22%;",
+                  selectInput(
        "indicador_migracion",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
@@ -433,7 +628,7 @@ ui <- fluidPage(tags$head(tags$script('
      
      
      
-   )),
+   ),
    mainPanel(
      tags$style(type="text/css",
                 
@@ -466,7 +661,7 @@ ui <- fluidPage(tags$head(tags$script('
      ),
      br(),
      br(),
-     plotly::plotlyOutput("plot_migracion",height = 'auto', width = 'auto'),
+     plotly::plotlyOutput("plot_migracion",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_migracion")),
      br(),
@@ -478,31 +673,35 @@ ui <- fluidPage(tags$head(tags$script('
      br(),
      
    )
- ),
+ )),
  tabPanel(
    title = "NBI",
    value = 'borelito',
+   icon = icon("house", lib = "font-awesome"),
    br(),
-   div( id ="Sidebar",sidebarPanel(
-     #style = "position:fixed;width:22%;",
-     selectInput(
+   #div( id ="Sidebar",
+   fluidRow(    
+     sidebarPanel(width = 3,
+                  #style = "position:fixed;width:22%;",
+                  selectInput(
        "indicador_nbi",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
-                          filter(nomindicador == "Porcentaje de personas afrodescendientes  con al menos una NBI  según departamento. Censo 2011"  | 
-                                   nomindicador == "Porcentaje de personas no afrodescendientes  con al menos una NBI  según  departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas entre 0 y 14 años con al menos una NBI según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en Vivienda decorosa según  departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en abastecimiento de agua potable según  departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en servicio higiénico según  departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en energía eléctrica según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en artefactos básicos de confort según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en educación según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en hacinamiento según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en cocina según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en calefacción según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en conservación de alimentos según departamento. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño, según departamento. Censo 2011"
+                          filter(nomindicador == "Porcentaje de personas afrodescendientes  con al menos una NBI. Censo 2011"  | 
+                                   nomindicador == "Porcentaje de personas no afrodescendientes  con al menos una NBI. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas entre 0 y 14 años con al menos una NBI. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en Vivienda decorosa . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en abastecimiento de agua potable. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en servicio higiénico. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en energía eléctrica . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en artefactos básicos de confort . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en educación . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en materiales de la vivienda . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en hacinamiento . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en cocina . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en calefacción. Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en conservación de alimentos . Censo 2011"|
+                                   nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño. Censo 2011"
                           )%>%
                           pull(nomindicador))),
      
@@ -519,7 +718,7 @@ ui <- fluidPage(tags$head(tags$script('
      
      
      
-   )),
+   ),
    mainPanel(
      tags$style(type="text/css",
                 
@@ -552,7 +751,7 @@ ui <- fluidPage(tags$head(tags$script('
      ),
      br(),
      br(),
-     plotly::plotlyOutput("plot_nbi",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE),
+     plotly::plotlyOutput("plot_nbi",height = 'auto', width = 'auto')%>% withSpinner(color="#2a3a4a",hide.ui = FALSE,type =2),
      tags$h6(style="display:inline-block",
              uiOutput("fuente_nbi")),
      br(),
@@ -564,7 +763,7 @@ ui <- fluidPage(tags$head(tags$script('
      br(),
      
    )
- )
+ ))
  
  
  
@@ -617,7 +816,7 @@ server <- function(session, input, output) {
   
   output$rango_tamano <- renderUI({
     
-    if(input$indicador_tamano == "Población total - proyecciones"){
+    if(input$indicador_tamano == "Proyecciones de población (INE)"){
     
       sliderInput("rango_tamano", 
                 label = "Rango de tiempo", 
@@ -698,30 +897,30 @@ output$def_tamano <- renderUI({
 
 output$plot_tamano <- plotly::renderPlotly({
 
-  if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Total") {
+  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
 
+    
     g1 <- base_tamano_rango() %>%
       filter(sexo == "ambos sexos") %>%
-      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=sexo,group = sexo, text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1))))+ 
-      geom_line(size = 1, color="#3182BD") +
-      geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color=sexo,
+                 text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1)))) +
+      geom_line(aes(group=sexo),size = 0.8, alpha = 0.5) +
+      geom_point( size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      theme_minimal() +
       theme(axis.text = element_text(size = 8),legend.position = "none")+
-      labs(x = "",
-           y = "")
+      scale_color_manual(values = "#2171B5")+
+      labs(
+        x = "",
+        y = "")  
            
+  
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
-                                   x = 0.5,y=-0.2),
-                     
-                     annotations = list(x = 1, y = -0.4, 
-      text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                         unique(base_tamano_rango()$fuente))))) %>%
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -741,24 +940,29 @@ output$plot_tamano <- plotly::renderPlotly({
 
 
 
-  } else if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Sexo"){
 
+    
     g1 <- base_tamano_rango() %>%
       filter(sexo != "ambos sexos") %>%
-      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
-      geom_line(size = 1) +
-      geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color=sexo,
+                 text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
+      geom_line(aes(group=sexo),size = 0.8, alpha = 0.5) +
+      geom_point( size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      theme_minimal() +
-      theme(axis.text.y  = element_text(size = 8),legend.position = "bottom")+
-      labs(x = "",
-           y = "")
+      theme(axis.text = element_text(size = 8))+
+      scale_color_viridis(name = " ", discrete = T, direction = 1)+
+      labs(
+        x = "",
+        y = "")  
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -782,10 +986,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(fecha == input$rango_tamano_ano & sexo != "ambos sexos")%>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
-                                                "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
-                                                "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
-                                                "75-79 ","80-84 ","85-89 ","90 y más "))
+    piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
+                                                    "20 - 24","25 - 29","30 - 34","35 - 39","40 - 44",
+                                                    "45 - 49","50 - 54","55 - 59","60 - 64","65 - 69","70 - 74",
+                                                    "75 - 79","80 - 84","85 - 89","90 - 94"))
     
     g1 <- piramide %>%
       ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
@@ -798,9 +1002,10 @@ output$plot_tamano <- plotly::renderPlotly({
       expand_limits(y = c(-50, 50)) +
       scale_y_continuous(breaks = seq(-50, 50, by = 10),
                          labels = abs) + 
-      scale_fill_manual(name = "Sexo",
-                        values = c("varones" = "#C6DBEF",
-                                   "mujeres" = "#2171B5")) +
+       scale_fill_manual(name = "Sexo",
+                         values = c("varones" = "#C6DBEF",
+                                    "mujeres" = "#2171B5")) +
+      #scale_fill_viridis(name = " ", discrete = T, direction = 1)+
       coord_flip() +
       theme_minimal()+
       theme(legend.title = element_blank(),
@@ -820,10 +1025,10 @@ output$plot_tamano <- plotly::renderPlotly({
         y = "",
         caption = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -847,10 +1052,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(fecha == input$rango_tamano_ano & sexo == "ambos sexos" ) %>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
-                                                    "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
-                                                    "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
-                                                    "75-79 ","80-84 ","85-89 ","90 y más "))
+    piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
+                                                    "20 - 24","25 - 29","30 - 34","35 - 39","40 - 44",
+                                                    "45 - 49","50 - 54","55 - 59","60 - 64","65 - 69","70 - 74",
+                                                    "75 - 79","80 - 84","85 - 89","90 - 94"))
     
     g1 <- piramide %>%
       ggplot(aes(x = edad, text=paste("</br>Año:",fecha,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
@@ -876,10 +1081,10 @@ output$plot_tamano <- plotly::renderPlotly({
         y = "",
         caption = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -922,15 +1127,15 @@ output$plot_tamano <- plotly::renderPlotly({
         axis.ticks = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        legend.text = element_blank(),
-        legend.title = element_blank(),
+        legend.position = "none",
         panel.grid.major = element_line(colour = "transparent"))
       
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -974,14 +1179,14 @@ output$plot_tamano <- plotly::renderPlotly({
         axis.ticks = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        legend.text = element_blank(),
-        legend.title = element_blank(),
+        legend.position = "none",
         panel.grid.major = element_line(colour = "transparent"))
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -1024,14 +1229,14 @@ output$plot_tamano <- plotly::renderPlotly({
         axis.ticks = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        legend.text = element_blank(),
-        legend.title = element_blank(),
+        legend.position = "none",
         panel.grid.major = element_line(colour = "transparent"))
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -1087,10 +1292,11 @@ output$plot_tamano <- plotly::renderPlotly({
         y = "",
         caption = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -1152,10 +1358,11 @@ output$plot_tamano <- plotly::renderPlotly({
         y = "",
         caption = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",   
-                                   xanchor = "center",  
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
                                    x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
@@ -1184,7 +1391,7 @@ output$plot_tamano <- plotly::renderPlotly({
 
 output$tabla_tamano <- renderDT({
   
-  if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Total") {
+  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
     
     
     datatable(base_tamano_rango() %>%
@@ -1201,7 +1408,7 @@ output$tabla_tamano <- renderDT({
           
 
     
-  } else if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Sexo"){
     
     datatable(base_tamano_rango() %>%
                 filter(sexo != "ambos sexos") %>%
@@ -1367,7 +1574,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
   },
   content = function(file) {
 
-  if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Total") {
+  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
     
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
@@ -1382,7 +1589,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
     
     
     
-  } else if(input$indicador_tamano == "Población total - proyecciones" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Sexo"){
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
                            filter(sexo != "ambos sexos") %>%
@@ -1559,7 +1766,9 @@ base_estructura_rango <- reactive({
 
 
 output$title_estructura <- renderUI({ 
-  helpText(HTML(unique(base_estructura()$nomindicador)))
+  helpText(HTML(paste(unique(base_estructura()$nomindicador)," - ",input$corte_estructura)))
+  
+  
 })
 
 output$fuente_estructura <- renderUI({ 
@@ -1586,31 +1795,29 @@ output$def_estructura <- renderUI({
 
 output$plot_estructura <- plotly::renderPlotly({
 
+    
     g1 <- base_estructura_rango() %>%
       filter(departamento_uy == input$corte_estructura) %>%
-      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=departamento_uy,group = departamento_uy, 
-                 text = paste("</br>Año:",fecha,"</br>Área geográfica:",departamento_uy,"</br>Valor:",round(valor,1))))+
-      geom_line(size = 1, color="#3182BD") +
-      geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color=departamento_uy,
+                 text = paste("</br>Año:",fecha,"</br>Área geográfica:",departamento_uy,"</br>Valor:",round(valor,1)))) +
+      geom_line(aes(group=departamento_uy),size = 0.8, alpha = 0.5) +
+      geom_point( size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      
       theme(axis.text = element_text(size = 8),legend.position = "none")+
-      
-      labs(x = "",
-           y = "")
+      scale_color_manual(values = "#2171B5")+
+      labs(
+        x = "",
+        y = "")  
+    
 
 
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",
                                    xanchor = "center",
-                                   x = 0.5,y=-0.2),
-
-                     annotations = list(x = 1, y = -0.4,
-                                        text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                                                            unique(base_estructura_rango()$fuente))))) %>%
-
+                                   x = 0.5,y=-0.2)) %>%
+      
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
                        "pan2d",
@@ -1695,7 +1902,14 @@ base_fecundidad <- reactive({
 
 ##corte
 output$selectcorte_fecundidad <- renderUI({
-  selectInput("corte_fecundidad", "Seleccione:", choices = base_fecundidad()  %>% pull(departamento_uy) %>% unique())
+  if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad") {
+    
+    
+  } else{
+    
+    selectInput("corte_fecundidad", "Seleccione:", choices = base_fecundidad()  %>% pull(departamento_uy) %>% unique())
+  }
+    
 })
 
 ##años
@@ -1741,8 +1955,20 @@ base_fecundidad_rango <- reactive({
 
 
 output$title_fecundidad <- renderUI({ 
+  
+if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+
+ 
+  
   helpText(HTML(unique(base_fecundidad()$nomindicador)))
-})
+
+  } else{
+  
+    helpText(HTML(paste(unique(base_fecundidad()$nomindicador),"-",input$corte_fecundidad)))
+    
+}
+  
+  })
 
 output$fuente_fecundidad <- renderUI({ 
   helpText(HTML(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a",
@@ -1771,8 +1997,8 @@ output$plot_fecundidad <- plotly::renderPlotly({
   
     
     g1 <- base_fecundidad() %>% 
-         filter(departamento_uy == input$corte_fecundidad & fecha==input$rango_fecundidad_ano)%>% 
-      ggplot(aes(x=edad, y=valor, fill=edad,text = paste("</br>Año:",fecha,"</br>Área geográfica:",departamento_uy,"</br>Edad:",edad,"</br>Valor:",round(valor,1)))) +
+         filter(fecha==input$rango_fecundidad_ano)%>% 
+      ggplot(aes(x=edad, y=valor, fill=edad,text = paste("</br>Año:",fecha,"</br>Edad:",edad,"</br>Valor:",round(valor,1)))) +
                geom_bar(stat="identity", position=position_dodge(), width = 0.7) +
                scale_y_continuous(limits = c(0, 100))+
                scale_fill_manual(values=rev(RColorBrewer::brewer.pal(9,name="Blues")))+
@@ -1782,16 +2008,11 @@ output$plot_fecundidad <- plotly::renderPlotly({
                y = "")
              
              
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",
                                    xanchor = "center",
-                                   x = 0.5,y=-0.2)
-                     
-                      # annotations = list(x = 1, y = -0.4,
-                      #                    text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                      #                                        unique(base_fecundidad()$fuente))))
-                     ) %>%
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -1809,32 +2030,71 @@ output$plot_fecundidad <- plotly::renderPlotly({
                      displaylogo = FALSE)
     
   
-  } else {
+  } else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+    
+    
+    g1 <- base_fecundidad_rango() %>%
+      ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color="#2171B5",group=1,
+                 text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1))))+
+      geom_line(size = 0.8, alpha = 0.5) +
+      geom_point( size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
+      scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
+      theme(axis.text = element_text(size = 8),legend.position = "none")+
+      scale_color_manual(values = "#2171B5")+
+      labs(
+        x = "",
+        y = "") 
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
+                                   x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
+    
+    
+  }
+  
+  else {
+    
     
     
     g1 <- base_fecundidad_rango() %>%
       filter(departamento_uy == input$corte_fecundidad) %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=departamento_uy,group = departamento_uy, 
                  text = paste("</br>Año:",fecha,"</br>Área geográfica:",departamento_uy,"</br>Valor:",round(valor,1))))+
-      geom_line(size = 1, color="#3182BD") +
-      geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      geom_line(aes(group=departamento_uy),size = 0.8, alpha = 0.5) +
+      geom_point( size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
-      theme_minimal()+
       theme(axis.text = element_text(size = 8),legend.position = "none")+
-      labs(x = "",
-           y = "")
+      scale_color_manual(values = "#2171B5")+
+      labs(
+        x = "",
+        y = "")  
     
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",
                                    xanchor = "center",
-                                   x = 0.5,y=-0.2),
-                     
-                     annotations = list(x = 1, y = -0.4,
-                                        text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                                                            unique(base_fecundidad_rango()$fuente))))) %>%
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -1866,12 +2126,12 @@ output$tabla_fecundidad <- renderDT({
     
   
     datatable(base_fecundidad() %>% 
-                filter(departamento_uy == input$corte_fecundidad & fecha==input$rango_fecundidad_ano)%>%
+                filter(fecha==input$rango_fecundidad_ano)%>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
                   "Año" = fecha,
-                  "Área geográfica" = departamento_uy,
+                  #"Área geográfica" = departamento_uy,
                   "Edad" = edad,
                   "Valor" = round(valor,1)),
               rownames = FALSE,
@@ -1880,6 +2140,22 @@ output$tabla_fecundidad <- renderDT({
                                          targets = "_all"))))
     
  
+  }  else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+  
+    datatable(base_fecundidad_rango() %>%
+                #filter(departamento_uy == input$corte_fecundidad) %>%
+                arrange(fecha)%>%
+                transmute(
+                  "Indicador" = nomindicador,
+                  "Año" = fecha,
+                  # "Área geográfica" = departamento_uy,
+                  "Valor" = round(valor,1)),
+              rownames = FALSE,
+              options = list(columnDefs = 
+                               list(list(className = 'dt-center', 
+                                         targets = "_all"))))
+  
+    
   } else {
     
     datatable(base_fecundidad_rango() %>%
@@ -1911,18 +2187,33 @@ output$tabla_resultado_fecundidad_descarga <- downloadHandler(
       
     
       openxlsx::write.xlsx(base_fecundidad() %>% 
-                             filter(departamento_uy == input$corte_fecundidad & fecha==input$rango_fecundidad_ano)%>%
+                             filter(fecha==input$rango_fecundidad_ano)%>%
                              arrange(fecha)%>%
                              transmute(
                                "Indicador" = nomindicador,
                                "Año" = fecha,
-                               "Área geográfica" = departamento_uy,
+                               #"Área geográfica" = departamento_uy,
                                "Valor" = round(valor,1),
                                "Fuente" = fuente),file,
                            row.names = FALSE)
     
+    }  else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+   
+      openxlsx::write.xlsx(base_fecundidad() %>% 
+                             filter(fecha==input$rango_fecundidad_ano)%>%
+                             arrange(fecha)%>%
+                             transmute(
+                               "Indicador" = nomindicador,
+                               "Año" = fecha,
+                               #"Área geográfica" = departamento_uy,
+                               "Valor" = round(valor,1),
+                               "Fuente" = fuente),file,
+                           row.names = FALSE)
       
-    }else {
+      
+      
+      
+       }else {
       
       
       openxlsx::write.xlsx(base_fecundidad_rango() %>%
@@ -1970,7 +2261,7 @@ output$selectcorte_mortalidad <- renderUI({
     
     selectInput("corte_mortalidad", "Seleccione:", choices = c("Total","Sexo"))
     
-    
+  
   } else if(input$indicador_mortalidad == "Esperanza de vida al nacer por departamento (1996-2050)"){
     
     
@@ -2059,9 +2350,9 @@ output$def_mortalidad <- renderUI({
 output$plot_mortalidad <- plotly::renderPlotly({
   
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2020"|
-          input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2020"|
-          input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2020"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
+          input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
+          input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
     
     
     
@@ -2071,6 +2362,7 @@ output$plot_mortalidad <- plotly::renderPlotly({
                  text = paste("</br>Año:",fecha,"</br>Área geográfica:",departamento_uy,"</br>Valor:",round(valor,1))))+
       geom_line(size = 1, color="#3182BD") +
       geom_point(size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
       theme_minimal()+
@@ -2079,16 +2371,11 @@ output$plot_mortalidad <- plotly::renderPlotly({
            y = "")
     
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(
-        legend = list(orientation = "h",
-                      xanchor = "center",
-                      x = 0.5,y=-0.2),
-        
-        annotations = list(x = 1, y = -0.4,
-                           text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                                               unique(base_mortalidad_rango()$fuente))))) %>%
+      plotly::layout(legend = list(orientation = "h",   
+                                   xanchor = "center",  
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -2116,6 +2403,7 @@ output$plot_mortalidad <- plotly::renderPlotly({
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=sexo,group = sexo, text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1))))+ 
       geom_line(size = 1, color="#3182BD") +
       geom_point(size = 1) +
+      scale_y_continuous(expand = expansion(mult = .6))+
       scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
       theme_minimal()+
@@ -2124,15 +2412,11 @@ output$plot_mortalidad <- plotly::renderPlotly({
            y = "")
     
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
-                                   x = 0.5,y=-0.2),
-                     
-                     annotations = list(x = 1, y = -0.4, 
-                                        text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                                                            unique(base_mortalidad_rango()$fuente))))) %>%
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -2159,14 +2443,16 @@ output$plot_mortalidad <- plotly::renderPlotly({
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
       geom_line(size = 1) +
       geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      scale_y_continuous(expand = expansion(mult = .6))+
+      #scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
+      scale_color_viridis(name = " ", discrete = T, direction = 1)+
       theme_minimal() +
       theme(axis.text.y  = element_text(size = 8),legend.position = "bottom")+
       labs(x = "",
            y = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
@@ -2197,14 +2483,16 @@ output$plot_mortalidad <- plotly::renderPlotly({
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
       geom_line(size = 1) +
       geom_point(size = 1) +
-      scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
+      scale_y_continuous(expand = expansion(mult = .6))+
+      #scale_color_manual(values=rev(RColorBrewer::brewer.pal(3,name="Blues")))+
       scale_x_date(date_breaks = "5 years",date_labels  = "%Y")+
+      scale_color_viridis(name = " ", discrete = T, direction = 1)+
       theme_minimal() +
       theme(axis.text.y  = element_text(size = 8),legend.position = "bottom")+
       labs(x = "",
            y = "")
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
@@ -2236,9 +2524,9 @@ output$plot_mortalidad <- plotly::renderPlotly({
 
 output$tabla_mortalidad <- renderDT({
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2020"|
-     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2020"|
-     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2020"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
+     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
+     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
     
     
     datatable(base_mortalidad_rango() %>%
@@ -2322,9 +2610,9 @@ output$tabla_resultado_mortalidad_descarga <- downloadHandler(
   },
   content = function(file) {
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2020"|
-     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2020"|
-     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2020"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
+     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
+     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
     
     
     
@@ -2537,13 +2825,12 @@ output$plot_migracion <- plotly::renderPlotly({
         axis.ticks = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
-        legend.text = element_blank(),
-        legend.title = element_blank(),
+        legend.position = "none",
         panel.grid.major = element_line(colour = "transparent"))
       
       
-      plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
-                       hoverinfo = 'text',tooltip = c("text"))%>%
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
       plotly::layout(legend = list(orientation = "h",   
                                    xanchor = "center",  
                                    x = 0.5,y=-0.2)) %>%
@@ -2579,16 +2866,11 @@ output$plot_migracion <- plotly::renderPlotly({
            y = "")
     
     
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                      hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(
-        legend = list(orientation = "h",
-                      xanchor = "center",
-                      x = 0.5,y=-0.2),
-        
-        annotations = list(x = 1, y = -0.4,
-                           text = wrapit(paste("Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de",
-                                               unique(base_migracion_rango()$fuente))))) %>%
+      plotly::layout(legend = list(orientation = "h",   
+                                   xanchor = "center",  
+                                   x = 0.5,y=-0.2)) %>%
       
       plotly::config(displayModeBar = TRUE,
                      modeBarButtonsToRemove = list(
@@ -2768,12 +3050,11 @@ output$plot_nbi <- plotly::renderPlotly({
       axis.ticks = element_blank(),
       axis.title.x = element_blank(),
       axis.title.y = element_blank(),
-      legend.text = element_blank(),
-      legend.title = element_blank(),
+      legend.position = "none",
       panel.grid.major = element_line(colour = "transparent"))
   
   
-  plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = as.numeric(input$dimension[2]),
+  plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
                    hoverinfo = 'text',tooltip = c("text"))%>%
     plotly::layout(legend = list(orientation = "h",   
                                  xanchor = "center",  
