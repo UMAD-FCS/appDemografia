@@ -75,7 +75,7 @@ vs_blues_2 <- c(vs_blues[4], vs_blues[7])
 ##Ficha metodológica (ver compatibiidad de nombres)
 
 
-base_fichas <- readxl::read_excel("Base_Motor_Demografica_antes.xls",sheet = "LISTA INDICS CARGADOS")%>%
+base_fichas <- readxl::read_excel("Base_Motor_Demografica.xls",sheet = "LISTA INDICS CARGADOS")%>%
   janitor::clean_names() 
 
 
