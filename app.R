@@ -75,13 +75,13 @@ vs_blues_2 <- c(vs_blues[4], vs_blues[7])
 ##Ficha metodológica (ver compatibiidad de nombres)
 
 
-base_fichas <- readxl::read_excel("Base_Motor_Demografica.xls",sheet = "LISTA INDICS CARGADOS")%>%
+base_fichas <- readxl::read_excel("bases/Notas metodológicas.xls",sheet = "LISTA INDICS CARGADOS")%>%
   janitor::clean_names() 
 
 
-df_generica <- readxl::read_excel("Base_Motor_Demografica.xls") %>% 
+df_generica <- readxl::read_excel("bases/Base_Motor_Demografica_rev2025_vf.xlsx") %>% 
   janitor::clean_names() %>% 
-  select(- x1,- x2,- codind, - responsable) %>%
+  select(- codind, - responsable) %>%
   left_join(.,base_fichas[,c("nomindicador","definicion","forma_de_calculo")],by="nomindicador")
 
 depto=geouy::load_geouy("Departamentos")
