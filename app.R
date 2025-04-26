@@ -988,10 +988,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(fecha == input$rango_tamano_ano & sexo != "Total")%>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
-                                                    "20 - 24","25 - 29","30 - 34","35 - 39","40 - 44",
-                                                    "45 - 49","50 - 54","55 - 59","60 - 64","65 - 69","70 - 74",
-                                                    "75 - 79","80 - 84","85 - 89","90 - 94"))
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
     
     g1 <- piramide %>%
       ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
@@ -1054,10 +1054,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(fecha == input$rango_tamano_ano & sexo == "Total" ) %>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
-                                                    "20 - 24","25 - 29","30 - 34","35 - 39","40 - 44",
-                                                    "45 - 49","50 - 54","55 - 59","60 - 64","65 - 69","70 - 74",
-                                                    "75 - 79","80 - 84","85 - 89","90 - 94"))
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
     
     g1 <- piramide %>%
       ggplot(aes(x = edad, text=paste("</br>Año:",fecha,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
@@ -1263,10 +1263,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(departamento_uy == input$tamano_depto & sexo == "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
-                                                    "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
-                                                    "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
-                                                    "75-79 ","80-84 ","85-89 ","90-94 ","95-99 ","de 100 y más "))
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
     
     
     
@@ -1323,11 +1323,10 @@ output$plot_tamano <- plotly::renderPlotly({
       filter(departamento_uy == input$tamano_depto & sexo != "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
-    piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
-                                                    "20-24 ","25-29 ","30-34 ","35-39 ","40-44 ",
-                                                    "45-49 ","50-54 ","55-59 ","60-64 ","65-69 ","70-74 ",
-                                                    "75-79 ","80-84 ","85-89 ","90-94 ","95-99 ","de 100 y más "))
-    
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
     
     
     g1 <- piramide %>%
