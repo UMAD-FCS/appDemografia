@@ -257,10 +257,10 @@ ui <- fluidPage(tags$head(tags$script('
         "Seleccione el indicador:",
         choices = unique(df_generica %>%
                            filter(nomindicador == "Proyecciones de población (INE)"  | 
-                                    nomindicador == "Población por edades quinquenales - proyecciones"|
-                                    nomindicador == "Población departamental (censos)"|
-                                    nomindicador == "Población departamental - porcentaje (censos)"|
-                                    nomindicador == "Población  departamental censada por edades quinquenales y sexo, Censo 2011"
+                                    nomindicador == "Población por edades quinquenales (proyecciones)"|
+                                    nomindicador == "Población departamental"|
+                                    nomindicador == "Porcentaje de población departamental sobre total de población"|
+                                    nomindicador == "Población  departamental censada por edades quinquenales y sexo"
                            ) %>%
                            pull(nomindicador))),
       
@@ -431,13 +431,13 @@ ui <- fluidPage(tags$head(tags$script('
        "indicador_fecundidad",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
-                          filter(nomindicador == "Nacimientos"  | 
+                          filter(nomindicador == "Cantidad de nacimientos"  | 
                                    nomindicador == "Tasa Global de Fecundidad"|
-                                   nomindicador == "Nacimientos según departamento de residencia materna"|
+                                   nomindicador == "Cantidad de nacimientos según departamento de residencia materna"|
                                    nomindicador == "Tasa global de fecundidad por departamento al 30 de junio de cada año (1996-2025)"|
                                    nomindicador == "Tasa global de fecundidad total país  (1996-2050)"|
-                                   nomindicador == "Edad media a la maternidad"|
-                                   nomindicador == "Tasa de fecundidad adolescente observada  (por mil) por departamento (1996-2020)"|
+                                   nomindicador == "Edad media de la fecundidad"|
+                                   nomindicador == "Tasa de fecundidad adolescente observada  (por mil) por departamento"|
                                    nomindicador == "Porcentaje de embarazos no planificados por edad"
                           )%>%
                           pull(nomindicador))),
@@ -520,9 +520,9 @@ ui <- fluidPage(tags$head(tags$script('
        choices = unique(df_generica %>%
                           filter(nomindicador == "Esperanza de vida al nacer (1996-2050)"  | 
                                    nomindicador == "Esperanza de vida al nacer por departamento (1996-2050)"|
-                                   nomindicador == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
-                                   nomindicador == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
-                                   nomindicador == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"
+                                   nomindicador == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos)"|
+                                   nomindicador == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos)"|
+                                   nomindicador == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos)"
                           )%>%
                           pull(nomindicador))),
      
@@ -687,21 +687,21 @@ ui <- fluidPage(tags$head(tags$script('
        "indicador_nbi",
        "Seleccione el indicador:",
        choices = unique(df_generica %>%
-                          filter(nomindicador == "Porcentaje de personas afrodescendientes  con al menos una NBI. Censo 2011"  | 
-                                   nomindicador == "Porcentaje de personas no afrodescendientes  con al menos una NBI. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas entre 0 y 14 años con al menos una NBI. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en Vivienda decorosa . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en abastecimiento de agua potable. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en servicio higiénico. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en energía eléctrica . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en artefactos básicos de confort . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en educación . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en materiales de la vivienda . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en hacinamiento . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en cocina . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en calefacción. Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en conservación de alimentos . Censo 2011"|
-                                   nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño. Censo 2011"
+                          filter(nomindicador == "Porcentaje de personas afrodescendientes  con al menos una NBI"  | 
+                                   nomindicador == "Porcentaje de personas no afrodescendientes  con al menos una NBI"|
+                                   nomindicador == "Porcentaje de personas entre 0 y 14 años con al menos una NBI"|
+                                   nomindicador == "Porcentaje de personas con NBI en Vivienda decorosa"|
+                                   nomindicador == "Porcentaje de personas con NBI en abastecimiento de agua potable"|
+                                   nomindicador == "Porcentaje de personas con NBI en servicio higiénico"|
+                                   nomindicador == "Porcentaje de personas con NBI en energía eléctrica"|
+                                   nomindicador == "Porcentaje de personas con NBI en artefactos básicos de confort"|
+                                   nomindicador == "Porcentaje de personas con NBI en educación"|
+                                   nomindicador == "Porcentaje de personas con NBI en materiales de la vivienda"|
+                                   nomindicador == "Porcentaje de personas con NBI en hacinamiento"|
+                                   nomindicador == "Porcentaje de personas con NBI en cocina"|
+                                   nomindicador == "Porcentaje de personas con NBI en calefacción"|
+                                   nomindicador == "Porcentaje de personas con NBI en conservación de alimentos"|
+                                   nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño"
                           )%>%
                           pull(nomindicador))),
      
@@ -794,7 +794,7 @@ server <- function(session, input, output) {
   ##corte
   output$selectcorte_tamano <- renderUI({
     
-    if(input$indicador_tamano == "Población departamental - porcentaje (censos)"){
+    if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población"){
     
     selectInput("corte_tamano_tot", "Resultados por:", choices = c("Total"))
  
@@ -828,16 +828,18 @@ server <- function(session, input, output) {
                           max(base_tamano()$fecha)))
 
       
-    } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones"|
-             input$indicador_tamano == "Población departamental (censos)"|
-             input$indicador_tamano == "Población departamental - porcentaje (censos)"){
-      
+    } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)"|
+             input$indicador_tamano == "Población departamental"|
+             input$indicador_tamano == "Porcentaje de población departamental sobre total de población"){
+ 
+           
      selectInput("rango_tamano_ano",
                  label = "Años",
                  choices = unique(base_tamano()$fecha))
        
   
-    } else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011"){
+    } else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo"){
+      
       
       selectInput("tamano_depto",
                   label = "Área geográfica",
@@ -901,7 +903,7 @@ output$plot_tamano <- plotly::renderPlotly({
 
     
     g1 <- base_tamano_rango() %>%
-      filter(sexo == "ambos sexos") %>%
+      filter(sexo == "Total") %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color=sexo,
                  text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1)))) +
       geom_line(aes(group=sexo),size = 0.8, alpha = 0.5) +
@@ -944,7 +946,7 @@ output$plot_tamano <- plotly::renderPlotly({
 
     
     g1 <- base_tamano_rango() %>%
-      filter(sexo != "ambos sexos") %>%
+      filter(sexo != "Total") %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color=sexo,
                  text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
       geom_line(aes(group=sexo),size = 0.8, alpha = 0.5) +
@@ -980,10 +982,10 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
 
-  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Sexo"){
     
     piramide = base_tamano_rango() %>%
-      filter(fecha == input$rango_tamano_ano & sexo != "ambos sexos")%>%
+      filter(fecha == input$rango_tamano_ano & sexo != "Total")%>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
@@ -994,17 +996,17 @@ output$plot_tamano <- plotly::renderPlotly({
     g1 <- piramide %>%
       ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
       geom_col(data = filter(piramide, 
-                             sexo == "varones"), 
+                             sexo == "Varones"), 
                aes(y = round(-1*valor*100,2))) +
       geom_col(data = filter(piramide, 
-                             sexo == "mujeres"), 
+                             sexo == "Mujeres"), 
                aes(y = round(valor*100,2))) +  
       expand_limits(y = c(-50, 50)) +
       scale_y_continuous(breaks = seq(-50, 50, by = 10),
                          labels = abs) + 
        scale_fill_manual(name = "Sexo",
-                         values = c("varones" = "#C6DBEF",
-                                    "mujeres" = "#2171B5")) +
+                         values = c("Varones" = "#C6DBEF",
+                                    "Mujeres" = "#2171B5")) +
       #scale_fill_viridis(name = " ", discrete = T, direction = 1)+
       coord_flip() +
       theme_minimal()+
@@ -1046,10 +1048,10 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Total"){
+  } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Total"){
     
     piramide = base_tamano_rango() %>%
-      filter(fecha == input$rango_tamano_ano & sexo == "ambos sexos" ) %>%
+      filter(fecha == input$rango_tamano_ano & sexo == "Total" ) %>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0 - 4","5 - 9","10 - 14","15 - 19",
@@ -1102,11 +1104,11 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Total"){
+  }else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Total"){
     
     
     mapa = base_tamano() %>%
-      filter(fecha == input$rango_tamano_ano & sexo == "ambos sexos" )%>%
+      filter(fecha == input$rango_tamano_ano & sexo == "Total" )%>%
       mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
                                                           id = "Latin-ASCII")))
     
@@ -1153,11 +1155,11 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }  else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Sexo"){
+  }  else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
     
     
     mapa = base_tamano() %>%
-      filter(fecha == input$rango_tamano_ano & sexo != "ambos sexos" )%>%
+      filter(fecha == input$rango_tamano_ano & sexo != "Total" )%>%
       mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
                                                           id = "Latin-ASCII")))
     
@@ -1204,11 +1206,12 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }else if(input$indicador_tamano == "Población departamental - porcentaje (censos)" & input$corte_tamano_tot == "Total"){
+  }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
     
-    
+         
+           
     mapa = base_tamano() %>%
-      filter(fecha == input$rango_tamano_ano & sexo == "ambos sexos" )%>%
+      filter(fecha == input$rango_tamano_ano & sexo == "Total" )%>%
       mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
                                                           id = "Latin-ASCII")))
     
@@ -1254,10 +1257,10 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }  else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Total"){
+  }  else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
     
     piramide = base_tamano_depto() %>%
-      filter(departamento_uy == input$tamano_depto & sexo == "ambos sexos" )%>%
+      filter(departamento_uy == input$tamano_depto & sexo == "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
@@ -1314,10 +1317,10 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Sexo"){
+  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
     
     piramide = base_tamano_depto() %>%
-      filter(departamento_uy == input$tamano_depto & sexo != "ambos sexos" )%>%
+      filter(departamento_uy == input$tamano_depto & sexo != "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0-4 ","5-9 ","10-14 ","15-19 ",
@@ -1330,17 +1333,17 @@ output$plot_tamano <- plotly::renderPlotly({
     g1 <- piramide %>%
       ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
       geom_col(data = filter(piramide, 
-                             sexo == "varones"), 
+                             sexo == "Varones"), 
                aes(y = round(-1*valor*100,2))) +
       geom_col(data = filter(piramide, 
-                             sexo == "mujeres"), 
+                             sexo == "Mujeres"), 
                aes(y = round(valor*100,2))) +  
       expand_limits(y = c(-50, 50)) +
       scale_y_continuous(breaks = seq(-50, 50, by = 10),
                          labels = abs) + 
       scale_fill_manual(name = "Sexo",
-                        values = c("varones" = "#C6DBEF",
-                                   "mujeres" = "#2171B5")) +
+                        values = c("Varones" = "#C6DBEF",
+                                   "Mujeres" = "#2171B5")) +
       coord_flip() +
       theme_minimal()+
       theme(legend.title = element_blank(),
@@ -1395,7 +1398,7 @@ output$tabla_tamano <- renderDT({
     
     
     datatable(base_tamano_rango() %>%
-              filter(sexo == "ambos sexos") %>%
+              filter(sexo == "Total") %>%
               arrange(fecha)%>%
               transmute(
               "Indicador" = nomindicador,
@@ -1411,7 +1414,7 @@ output$tabla_tamano <- renderDT({
   } else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Sexo"){
     
     datatable(base_tamano_rango() %>%
-                filter(sexo != "ambos sexos") %>%
+                filter(sexo != "Total") %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1426,11 +1429,11 @@ output$tabla_tamano <- renderDT({
     
     
     
-  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Total"){
+  } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Total"){
     
       
     datatable(base_tamano_rango() %>%
-                filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1445,10 +1448,10 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Sexo"){
+  }else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Sexo"){
     
     datatable(base_tamano_rango() %>%
-                filter(sexo != "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1464,10 +1467,10 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Total"){
+  }else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Total"){
     
     datatable(base_tamano() %>%
-                filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1482,10 +1485,10 @@ output$tabla_tamano <- renderDT({
     
     
     
-  } else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
     
     datatable(base_tamano() %>%
-                filter(sexo != "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1501,10 +1504,11 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Población departamental - porcentaje (censos)" & input$corte_tamano_tot == "Total"){
+  }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
     
+           
     datatable(base_tamano() %>%
-                filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1519,11 +1523,11 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Total"){
+  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
     
     datatable(base_tamano_depto() %>%
                 
-                filter(sexo == "ambos sexos" & departamento_uy == input$tamano_depto) %>%
+                filter(sexo == "Total" & departamento_uy == input$tamano_depto) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1538,11 +1542,11 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Sexo"){
+  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
     
     datatable(base_tamano_depto() %>%
                 
-                filter(sexo != "ambos sexos" & departamento_uy == input$tamano_depto) %>%
+                filter(sexo != "Total" & departamento_uy == input$tamano_depto) %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -1578,7 +1582,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
     
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
-                           filter(sexo == "ambos sexos") %>%
+                           filter(sexo == "Total") %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1592,7 +1596,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
   } else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Sexo"){
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
-                           filter(sexo != "ambos sexos") %>%
+                           filter(sexo != "Total") %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1603,12 +1607,12 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Total"){
+  } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Total"){
     
     
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
-                           filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                           filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1620,10 +1624,10 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
     
     
     
-  } else if(input$indicador_tamano == "Población por edades quinquenales - proyecciones" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Población por edades quinquenales (proyecciones)" & input$corte_tamano == "Sexo"){
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
-                           filter(sexo != "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                           filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1635,10 +1639,10 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  }else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Total"){
+  }else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Total"){
     
     openxlsx::write.xlsx(base_tamano() %>%
-                           filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                           filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1649,10 +1653,10 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  } else if(input$indicador_tamano == "Población departamental (censos)" & input$corte_tamano == "Sexo"){
+  } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
     
     openxlsx::write.xlsx(base_tamano() %>%
-                           filter(sexo != "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                           filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1663,10 +1667,11 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                              "Fuente" = fuente),file,
                          row.names = FALSE)
     
-  }else if(input$indicador_tamano == "Población departamental - porcentaje (censos)" & input$corte_tamano_tot == "Total"){
+  }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
     
+           
     openxlsx::write.xlsx(base_tamano() %>%
-                           filter(sexo == "ambos sexos" & fecha == input$rango_tamano_ano) %>%
+                           filter(sexo == "Total" & fecha == input$rango_tamano_ano) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1677,11 +1682,11 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Total"){
+  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
     
     openxlsx::write.xlsx(base_tamano_depto() %>%
                            
-                           filter(sexo == "ambos sexos" & departamento_uy == input$tamano_depto) %>%
+                           filter(sexo == "Total" & departamento_uy == input$tamano_depto) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1692,11 +1697,11 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo, Censo 2011" & input$corte_tamano == "Sexo"){
+  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
     
     openxlsx::write.xlsx(base_tamano_depto() %>%
                            
-                           filter(sexo != "ambos sexos" & departamento_uy == input$tamano_depto) %>%
+                           filter(sexo != "Total" & departamento_uy == input$tamano_depto) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -1902,7 +1907,7 @@ base_fecundidad <- reactive({
 
 ##corte
 output$selectcorte_fecundidad <- renderUI({
-  if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad") {
+  if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad") {
     
     
   } else{
@@ -1956,7 +1961,7 @@ base_fecundidad_rango <- reactive({
 
 output$title_fecundidad <- renderUI({ 
   
-if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
 
  
   
@@ -2030,7 +2035,7 @@ output$plot_fecundidad <- plotly::renderPlotly({
                      displaylogo = FALSE)
     
   
-  } else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+  } else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
     
     
     g1 <- base_fecundidad_rango() %>%
@@ -2140,7 +2145,7 @@ output$tabla_fecundidad <- renderDT({
                                          targets = "_all"))))
     
  
-  }  else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+  }  else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
   
     datatable(base_fecundidad_rango() %>%
                 #filter(departamento_uy == input$corte_fecundidad) %>%
@@ -2197,7 +2202,7 @@ output$tabla_resultado_fecundidad_descarga <- downloadHandler(
                                "Fuente" = fuente),file,
                            row.names = FALSE)
     
-    }  else if(input$indicador_fecundidad == "Nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+    }  else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
    
       openxlsx::write.xlsx(base_fecundidad() %>% 
                              filter(fecha==input$rango_fecundidad_ano)%>%
@@ -2350,9 +2355,9 @@ output$def_mortalidad <- renderUI({
 output$plot_mortalidad <- plotly::renderPlotly({
   
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
-          input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
-          input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos)"|
+          input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos)"|
+          input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos)"){
     
     
     
@@ -2399,7 +2404,7 @@ output$plot_mortalidad <- plotly::renderPlotly({
     
     
     g1 <- base_mortalidad_rango() %>%
-      filter(sexo == "ambos sexos") %>%
+      filter(sexo == "Total") %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), y = valor, color=sexo,group = sexo, text = paste("</br>Año:",fecha,"</br>Valor:",round(valor,1))))+ 
       geom_line(size = 1, color="#3182BD") +
       geom_point(size = 1) +
@@ -2439,7 +2444,7 @@ output$plot_mortalidad <- plotly::renderPlotly({
     
     
     g1 <- base_mortalidad_rango() %>%
-      filter(sexo != "ambos sexos") %>%
+      filter(sexo != "Total") %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
       geom_line(size = 1) +
       geom_point(size = 1) +
@@ -2479,7 +2484,7 @@ output$plot_mortalidad <- plotly::renderPlotly({
     
     
     g1 <- base_mortalidad_rango() %>%
-      filter(sexo != "ambos sexos"& departamento_uy==input$corte_mortalidad_depto) %>%
+      filter(sexo != "Total"& departamento_uy==input$corte_mortalidad_depto) %>%
       ggplot(aes(as.Date(as.character(fecha), format = "%Y"), valor, color = sexo, group = sexo,text = paste("</br>Año:",fecha,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) +
       geom_line(size = 1) +
       geom_point(size = 1) +
@@ -2524,9 +2529,9 @@ output$plot_mortalidad <- plotly::renderPlotly({
 
 output$tabla_mortalidad <- renderDT({
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
-     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
-     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos)"|
+     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos)"|
+     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos)"){
     
     
     datatable(base_mortalidad_rango() %>%
@@ -2550,7 +2555,7 @@ output$tabla_mortalidad <- renderDT({
   
 
     datatable(base_mortalidad_rango() %>%
-                filter(sexo == "ambos sexos") %>%
+                filter(sexo == "Total") %>%
                 arrange(fecha)%>%
                 transmute(
                   "Indicador" = nomindicador,
@@ -2567,7 +2572,7 @@ output$tabla_mortalidad <- renderDT({
   
   
   datatable(base_mortalidad_rango() %>%
-              filter(sexo != "ambos sexos") %>%
+              filter(sexo != "Total") %>%
               arrange(fecha)%>%
               transmute(
                 "Indicador" = nomindicador,
@@ -2584,7 +2589,7 @@ output$tabla_mortalidad <- renderDT({
   
   
   datatable(base_mortalidad_rango() %>%
-              filter(sexo != "ambos sexos"& departamento_uy==input$corte_mortalidad_depto) %>%
+              filter(sexo != "Total"& departamento_uy==input$corte_mortalidad_depto) %>%
               arrange(fecha)%>%
               transmute(
                 "Indicador" = nomindicador,
@@ -2610,9 +2615,9 @@ output$tabla_resultado_mortalidad_descarga <- downloadHandler(
   },
   content = function(file) {
   
-  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos) 1984-2022"|
-     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos) 1984-2022"|
-     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos) 1984-2022"){
+  if(input$indicador_mortalidad == "Tasa de mortalidad neonatal (por 1.000 nacidos vivos)"|
+     input$indicador_mortalidad == "Tasa de mortalidad posneonatal (por 1.000 nacidos vivos)"|
+     input$indicador_mortalidad == "Tasa de mortalidad infantil (menores de 1 año por 1.000 nacidos vivos)"){
     
     
     
@@ -2633,7 +2638,7 @@ output$tabla_resultado_mortalidad_descarga <- downloadHandler(
             input$corte_mortalidad == "Total") {
     
     openxlsx::write.xlsx(base_mortalidad_rango() %>%
-                           filter(sexo == "ambos sexos") %>%
+                           filter(sexo == "Total") %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -2650,7 +2655,7 @@ output$tabla_resultado_mortalidad_descarga <- downloadHandler(
             input$corte_mortalidad == "Sexo") {
     
     openxlsx::write.xlsx(base_mortalidad_rango() %>%
-                           filter(sexo != "ambos sexos") %>%
+                           filter(sexo != "Total") %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
@@ -2665,7 +2670,7 @@ output$tabla_resultado_mortalidad_descarga <- downloadHandler(
             input$corte_mortalidad_sexo == "Sexo") {
     
     openxlsx::write.xlsx(base_mortalidad_rango() %>%
-                           filter(sexo != "ambos sexos"& departamento_uy==input$corte_mortalidad_depto) %>%
+                           filter(sexo != "Total"& departamento_uy==input$corte_mortalidad_depto) %>%
                            arrange(fecha)%>%
                            transmute(
                              "Indicador" = nomindicador,
