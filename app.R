@@ -704,6 +704,9 @@ ui <- fluidPage(tags$head(tags$script('
                                    nomindicador == "Porcentaje de personas con NBI en calentador de agua para el baño"
                           )%>%
                           pull(nomindicador))),
+       
+       uiOutput("rango_nbi"),
+       
      
      tags$a(href="https://umad.cienciassociales.edu.uy/", 
             "Unidad de Métodos y Acceso a Datos",
@@ -3005,6 +3008,17 @@ base_nbi <- reactive({
   
 })
 
+##años
+
+output$rango_nbi <- renderUI({
+
+      selectInput("rango_nbi_ano",
+                label = "Años",
+                choices = unique(base_nbi()$fecha))
+  
+})
+
+
 
 
 output$title_nbi <- renderUI({ 
@@ -3034,13 +3048,15 @@ output$plot_nbi <- plotly::renderPlotly({
   
   
   mapa = base_nbi() %>%
+    filter(fecha==input$rango_nbi_ano)%>%
     mutate(nombre = toupper(stringi::stri_trans_general(str = pais, 
                                                         id = "Latin-ASCII")))
   
   mapa_geo = depto %>%
     left_join(mapa,by = "nombre") 
   
-  g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",pais,"</br>Valor:",paste0(round(valor,1),"%")))) + geom_sf() +
+  g1 <-  
+    ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",pais,"</br>Valor:",paste0(round(valor,1),"%")))) + geom_sf() +
     geom_sf_text(aes(label = paste0(round(valor,1),"%")), colour = "black",size=3,fontface = "bold")+
     scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
     labs(x = "",
@@ -3088,6 +3104,7 @@ output$tabla_nbi <- renderDT({
   
     
     datatable(base_nbi() %>%
+                filter(fecha==input$rango_nbi_ano)%>% 
                 transmute(
                   "Indicador" = nomindicador,
                   "Año" = fecha,
@@ -3111,6 +3128,7 @@ output$tabla_resultado_nbi_descarga <- downloadHandler(
     
       
       openxlsx::write.xlsx(base_nbi() %>%
+                             filter(fecha==input$rango_nbi_ano)%>% 
                              transmute(
                                "Indicador" = nomindicador,
                                "Año" = fecha,
