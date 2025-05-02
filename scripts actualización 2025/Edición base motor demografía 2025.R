@@ -29,7 +29,7 @@ df <- df %>% dplyr::mutate(NOMINDICADOR = ifelse(NOMINDICADOR == "Distribución 
                                                  "Cantidad de nacimientos según departamento de residencia materna", NOMINDICADOR),
                            NOMINDICADOR = ifelse(NOMINDICADOR == "Población  departamental censada por edades quinquenales y sexo, Censo 2011",
                                                  "Población  departamental censada por edades quinquenales y sexo", NOMINDICADOR),
-                           NOMINDICADOR = ifelse(NOMINDICADOR == "Población departamental - porcentaje (censos)",
+                             NOMINDICADOR = ifelse(NOMINDICADOR == "Población departamental - porcentaje (censos)",
                                                  "Porcentaje de población departamental sobre total de población", NOMINDICADOR),
                            NOMINDICADOR = ifelse(NOMINDICADOR == "Población departamental (censos)",
                                                  "Población departamental", NOMINDICADOR),
@@ -376,4 +376,30 @@ df <- df  %>% dplyr::mutate(CODIND = ifelse(NOMINDICADOR == "Porcentaje de perso
 df <- df  %>% dplyr::mutate(CODIND = ifelse(NOMINDICADOR == "Población nacida en el exterior según país de nacimiento", "p56", CODIND))
 df <- df  %>% dplyr::mutate(CODIND = ifelse(NOMINDICADOR == "Población total censada", "p72", CODIND))
 
-rio::export(df,"Demografía/Base_Motor_Demografica_rev2025.xlsx")
+
+# Fecha en indicadores de migración
+
+df <- df %>% dplyr::mutate(FECHA = ifelse(FECHA == "1975-1970", 1975, FECHA))
+df <- df %>% dplyr::mutate(FECHA = ifelse(FECHA== "1985-1980", 1985, FECHA))
+df <- df %>% dplyr::mutate(FECHA = ifelse(FECHA== "1996-1991", 1996, FECHA))
+df <- df %>% dplyr::mutate(FECHA = ifelse(FECHA== "2006-2011", 2011, FECHA))
+df <- df %>% dplyr::mutate(FECHA = ifelse(FECHA== "2018-2023", 2023, FECHA))
+
+
+df <- df %>% mutate(VALOR = ifelse((NOMINDICADOR=="Porcentaje de población departamental sobre total de población"|
+                                    NOMINDICADOR=="Distribución porcentual de personas nacidas en el exterior según país de nacimiento")
+                                   &FECHA==2023, gsub(",", ".", VALOR), VALOR))
+
+
+df <- df %>% dplyr::mutate(FECHA = as.numeric(FECHA))
+df <- df %>% dplyr::mutate(VALOR = as.numeric(VALOR))
+
+
+
+## Modifico valor de esperanza de vida para 1996
+# Dos valores para total, el menos corresponde a varones
+df <- df %>% mutate(SEXO = ifelse(NOMINDICADOR=="Esperanza de vida al nacer (1996-2050)"&FECHA==1996&VALOR<71,"Varones", SEXO)) 
+  
+  
+
+rio::export(df,"bases/Base_Motor_Demografica_rev2025.xlsx")

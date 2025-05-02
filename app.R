@@ -86,6 +86,12 @@ df_generica <- readxl::read_excel("bases/Base_Motor_Demografica_rev2025_vf.xlsx"
 
 depto=geouy::load_geouy("Departamentos")
 
+df_generica <- df_generica %>% mutate(departamento_uy = 
+                                          case_when(departamento_uy == "NA" ~ pais, 
+                                                   departamento_uy != "NA" ~ departamento_uy,
+                                                   departamento_uy == "Total país" ~ "Total"))
+
+
 #df_generica$fecha=as.character(df_generica$fecha)                   
 
 
@@ -1263,18 +1269,18 @@ output$plot_tamano <- plotly::renderPlotly({
   }  else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
     
     piramide = base_tamano_depto() %>%
-      filter(departamento_uy == input$tamano_depto & sexo == "Total" )%>%
+      filter(fecha == input$rango_tamano_ano & departamento_uy == input$tamano_depto & sexo == "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
                                                     "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
                                                     "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
     
     
     
     g1 <- piramide %>%
-      ggplot(aes(x = edad, text=paste("</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
+      ggplot(aes(x = edad, text=paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
       geom_col(data = piramide, 
                aes(y = round(valor,2)),fill="#3182BD") +
       expand_limits(y = c(-50, 50)) +
@@ -1323,17 +1329,17 @@ output$plot_tamano <- plotly::renderPlotly({
   }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
     
     piramide = base_tamano_depto() %>%
-      filter(departamento_uy == input$tamano_depto & sexo != "Total" )%>%
+      filter(fecha == input$rango_tamano_ano & departamento_uy == input$tamano_depto & sexo != "Total" )%>%
       mutate(edad = gsub("años de edad","",edad))
     
     piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
                                                     "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
                                                     "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años"))
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
     
     
     g1 <- piramide %>%
-      ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
+      ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
       geom_col(data = filter(piramide, 
                              sexo == "Varones"), 
                aes(y = round(-1*valor*100,2))) +
@@ -1534,6 +1540,7 @@ output$tabla_tamano <- renderDT({
                 transmute(
                   "Indicador" = nomindicador,
                   "Año" = fecha,
+                  "Edad" = edad,
                   "Departamento" = departamento_uy,
                   "Valor" = valor),
               rownames = FALSE,
@@ -1553,6 +1560,7 @@ output$tabla_tamano <- renderDT({
                 transmute(
                   "Indicador" = nomindicador,
                   "Año" = fecha,
+                  "Edad" = edad,
                   "Departamento" = departamento_uy,
                   "Sexo" = sexo,
                   "Valor" = valor),
@@ -1678,6 +1686,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                            transmute(
                              "Indicador" = nomindicador,
                              "Año" = fecha,
+                             "Edad" = edad,
                              "Departamento" = departamento_uy,
                              "Valor" = round(valor,1),
                              "Fuente" = fuente),file,
@@ -1693,6 +1702,7 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                            transmute(
                              "Indicador" = nomindicador,
                              "Año" = fecha,
+                             "Edad" = edad,
                              "Departamento" = departamento_uy,
                              "Valor" = valor,
                              "Fuente" = fuente),file,
@@ -3046,10 +3056,9 @@ output$def_nbi <- renderUI({
 
 output$plot_nbi <- plotly::renderPlotly({
   
-  
   mapa = base_nbi() %>%
     filter(fecha==input$rango_nbi_ano)%>%
-    mutate(nombre = toupper(stringi::stri_trans_general(str = pais, 
+    mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
                                                         id = "Latin-ASCII")))
   
   mapa_geo = depto %>%

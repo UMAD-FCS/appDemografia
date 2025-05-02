@@ -15,9 +15,11 @@ library(tidyverse)
 #dfv <- rio::import("Bases/viviendas_ext_26_02.csv")
 #dfh <- rio::import("Bases/hogares_ext_26_02.csv")
 
+
+#dfp <- rio::import("C:/Users/Shari/Dropbox/UMAD/DESCA/Convenio 2025/Procesamiento Censo/Bases/personas_ampliada_ext_26_02.csv")
 dfp <- rio::import("Bases/personas_ampliada_ext_26_02.csv")
 #df2011 <- rio::import("Bases/población con actividad_2011.dta") # Para chequeos
-motor <- rio::import("Demografía/Base_Motor_Demografica_rev2025.xlsx")
+motor <- rio::import("bases/Base_Motor_Demografica_rev2025.xlsx")
 rraa <- rio::import("Demografía/Actualización_Registros Administrativos_2025.xlsx")
 codigopais <- rio::import("Bases/Paises_Censo2023.xlsx") 
 proydptos <- rio::import("Bases/proy_dptos.xlsx")
@@ -418,6 +420,327 @@ i08 <- rbind(i08,i08t)
 
 
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas entre 0 y 14 años con al menos una NBI
+
+
+i14 <- dfp %>%
+  filter(PERNA01>= 0 & PERNA01 <= 14) %>%  
+  mutate(NBI_2011 = as.numeric(NBI_2011)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_2011, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i14 <- i14 %>% select(-mean_NBI)
+colnames(i14) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p42"
+NOMINDICADOR <- "Porcentaje de personas entre 0 y 14 años con al menos una NBI"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i14 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i14, RESPONSABLE, FUENTE)
+
+i14t <- dfp %>%
+  filter(PERNA01>= 0 & PERNA01 <= 14) %>%  
+  mutate(NBI_2011 = as.numeric(NBI_2011)) %>%  
+  summarise(mean_NBI = mean(NBI_2011, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i14t <- i14t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i14t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i14t, RESPONSABLE, FUENTE)
+
+i14 <- rbind(i14,i14t)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en Vivienda decorosa
+
+
+i15 <- dfp %>%
+  mutate(NBI_vivienda11 = as.numeric(NBI_vivienda11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_vivienda11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i15 <- i15 %>% select(-mean_NBI)
+colnames(i15) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p43"
+NOMINDICADOR <- "Porcentaje de personas con NBI en Vivienda decorosa"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i15 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i15, RESPONSABLE, FUENTE)
+
+i15t <- dfp %>%
+  mutate(NBI_vivienda11 = as.numeric(NBI_vivienda11)) %>%  
+  summarise(mean_NBI = mean(NBI_vivienda11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i15t <- i15t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i15t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i15t, RESPONSABLE, FUENTE)
+
+i15 <- rbind(i15,i15t)
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en abastecimiento de agua potable
+
+
+i16 <- dfp %>%
+  mutate(NBI_agua11 = as.numeric(NBI_agua11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_agua11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i16 <- i16 %>% select(-mean_NBI)
+colnames(i16) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p44"
+NOMINDICADOR <- "Porcentaje de personas con NBI en abastecimiento de agua potable"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i16 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i16, RESPONSABLE, FUENTE)
+
+i16t <- dfp %>%
+  mutate(NBI_agua11 = as.numeric(NBI_agua11)) %>%  
+  summarise(mean_NBI = mean(NBI_agua11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i16t <- i16t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i16t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i16t, RESPONSABLE, FUENTE)
+
+i16 <- rbind(i16,i16t)
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en servicio higiénico
+
+
+i17 <- dfp %>%
+  filter(NBI_servhigien11 != 99) %>%  
+  mutate(NBI_servhigien11 = as.numeric(NBI_servhigien11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_servhigien11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i17 <- i17 %>% select(-mean_NBI)
+colnames(i17) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p45"
+NOMINDICADOR <- "Porcentaje de personas con NBI en servicio higiénico"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i17 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i17, RESPONSABLE, FUENTE)
+
+i17t <- dfp %>%
+  filter(NBI_servhigien11 != 99) %>%  
+  summarise(mean_NBI = mean(NBI_servhigien11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i17t <- i17t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i17t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i17t, RESPONSABLE, FUENTE)
+
+i17 <- rbind(i17,i17t)
+
+
+
+#Porcentaje de personas con NBI en energía eléctrica: no relevado
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en artefactos básicos de confort
+
+
+i18 <- dfp %>%
+  mutate(NBI_artefactos11 = as.numeric(NBI_artefactos11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_artefactos11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i18 <- i18 %>% select(-mean_NBI)
+colnames(i18) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p47"
+NOMINDICADOR <- "Porcentaje de personas con NBI en artefactos básicos de confort"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i18 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i18, RESPONSABLE, FUENTE)
+
+i18t <- dfp %>%
+  mutate(NBI_artefactos11 = as.numeric(NBI_artefactos11)) %>%  
+  summarise(mean_NBI = mean(NBI_artefactos11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i18t <- i18t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i18t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i18t, RESPONSABLE, FUENTE)
+
+i18 <- rbind(i18,i18t)
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en educación
+
+
+i19 <- dfp %>%
+  mutate(NBI_educacion11 = as.numeric(NBI_educacion11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_educacion11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i19 <- i19 %>% select(-mean_NBI)
+colnames(i19) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p48"
+NOMINDICADOR <- "Porcentaje de personas con NBI en educación"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i19 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i19, RESPONSABLE, FUENTE)
+
+i19t <- dfp %>%
+  mutate(NBI_educacion11 = as.numeric(NBI_educacion11)) %>%  
+  summarise(mean_NBI = mean(NBI_educacion11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i19t <- i19t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i19t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i19t, RESPONSABLE, FUENTE)
+
+i19 <- rbind(i19,i19t)
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en materiales de la vivienda
+
+
+i20 <- dfp %>%
+  mutate(NBI_materialidad11 = as.numeric(NBI_materialidad11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_materialidad11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i20 <- i20 %>% select(-mean_NBI)
+colnames(i20) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p49"
+NOMINDICADOR <- "Porcentaje de personas con NBI en materiales de la vivienda"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i20 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i20, RESPONSABLE, FUENTE)
+
+i20t <- dfp %>%
+  mutate(NBI_materialidad11 = as.numeric(NBI_materialidad11)) %>%  
+  summarise(mean_NBI = mean(NBI_materialidad11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i20t <- i20t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i20t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i20t, RESPONSABLE, FUENTE)
+
+i20 <- rbind(i20,i20t)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en hacinamiento
+
+
+i21 <- dfp %>%
+  mutate(bd_hacinamiento1 = as.numeric(bd_hacinamiento1)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(bd_hacinamiento1, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i21 <- i21 %>% select(-mean_NBI)
+colnames(i21) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p50"
+NOMINDICADOR <- "Porcentaje de personas con NBI en hacinamiento"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i21 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i21, RESPONSABLE, FUENTE)
+
+i21t <- dfp %>%
+  mutate(bd_hacinamiento1 = as.numeric(bd_hacinamiento1)) %>%  
+  summarise(mean_NBI = mean(bd_hacinamiento1, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i21t <- i21t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i21t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i21t, RESPONSABLE, FUENTE)
+
+i21 <- rbind(i21,i21t)
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+# ~~~ Porcentaje de personas con NBI en cocina
+
+
+i22 <- dfp %>%
+  mutate(NBI_cocina11 = as.numeric(NBI_cocina11)) %>%  
+  group_by(DEPARTAMENTO) %>%  
+  summarise(mean_NBI = mean(NBI_cocina11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+
+i22 <- i22 %>% select(-mean_NBI)
+colnames(i22) <- c("DEPARTAMENTO_UY","VALOR")
+
+CODIND <- "p51"
+NOMINDICADOR <- "Porcentaje de personas con NBI en cocina"
+EDAD <- "NA"
+SEXO <- "NA"
+
+i22 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, PAIS, FECHA, i22, RESPONSABLE, FUENTE)
+
+i22t <- dfp %>%
+  mutate(NBI_cocina11 = as.numeric(NBI_cocina11)) %>%  
+  summarise(mean_NBI = mean(NBI_cocina11, na.rm = TRUE)) %>%  
+  mutate(VALOR = (mean_NBI * 100))
+i22t <- i22t %>% select(-mean_NBI)
+
+DEPARTAMENTO_UY <- "Total"
+FUENTE <- "INE Censos de Población"
+
+i22t <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA,i22t, RESPONSABLE, FUENTE)
+
+i22 <- rbind(i22,i22t)
+
+##Se relevan juntos, sería como nuevo indicador, ver luego!
+#Porcentaje de personas con NBI en calefacción
+#Porcentaje de personas con NBI en conservación de alimentos
+#Porcentaje de personas con NBI en calentador de agua para el baño
+
+
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
@@ -584,7 +907,7 @@ i13 <- cbind(CODIND, NOMINDICADOR, EDAD, SEXO, DEPARTAMENTO_UY, PAIS, FECHA, VAL
 # Construcción de base motor
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
 
-motor23 <- rbind(i01,i02,i03,i04,i05,i06,i07,i08,i09,i10,i11,i12,i13)
+motor23 <- rbind(i01,i02,i03,i04,i05,i06,i07,i08,i09,i10,i11,i12,i13, i14,i15,i16,i17,i18,i19,i20,i21,i22)
 
 motor23 <- motor23 %>% mutate(DEPARTAMENTO_UY =
   case_when(
@@ -622,8 +945,6 @@ table(is.na(actualiza$FECHA))
 
 actualiza <- rbind(actualiza, rraa)
 
-
-
-
-rio::export(actualiza,"Demografía/Base_Motor_Demografica_rev2025_vf.xlsx")
+actualiza <- actualiza %>% mutate(FECHA = as.numeric(FECHA))
+rio::export(actualiza,"bases/Base_Motor_Demografica_rev2025_vf.xlsx")
 
