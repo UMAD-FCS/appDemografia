@@ -272,6 +272,7 @@ ui <- fluidPage(tags$head(tags$script('
       
       uiOutput("selectcorte_tamano"),
       uiOutput("rango_tamano"),
+      uiOutput("depto_tamano"),
       
       
       tags$a(href="https://umad.cienciassociales.edu.uy/", 
@@ -847,18 +848,31 @@ server <- function(session, input, output) {
                  choices = unique(base_tamano()$fecha))
        
   
-    } else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo"){
+    } else if(input$indicador_tamano =="Población  departamental censada por edades quinquenales y sexo"){
       
-      
-      selectInput("tamano_depto",
-                  label = "Área geográfica",
-                  choices = unique(base_tamano()$departamento_uy))
-      
+      selectInput("rango_tamano_ano2",
+                  label = "Años",
+                  choices = c(2011,2023))
       
     }
     
     
       })
+  
+  
+  output$depto_tamano <- renderUI({
+  
+  if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo"){
+    
+    
+    selectInput("tamano_depto",
+                label = "Área geográfica",
+                choices = base_tamano()%>% filter(fecha== input$rango_tamano_ano2 ) %>% pull(departamento_uy) %>% unique())
+    
+    
+  }else{}
+  
+  })
   
   
   
@@ -872,17 +886,8 @@ server <- function(session, input, output) {
                fecha <= input$rango_tamano[2])
   })
   
-  base_tamano_depto <- reactive({
-    
-    req(input$tamano_depto)
-    
-    base_tamano() %>%
-      filter(departamento_uy == input$tamano_depto)
-  })
   
-  
-  
-  
+
   
 output$title_tamano <- renderUI({ 
   helpText(HTML(unique(base_tamano()$nomindicador)))
@@ -906,9 +911,140 @@ output$def_tamano <- renderUI({
 })
 
 
-output$plot_tamano <- plotly::renderPlotly({
+output$plot_tamano <- plotly::renderPlotly({ 
+  
+     if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" 
+          & input$corte_tamano == "Total" ){
+    
+    piramide = base_tamano() %>%
+      filter(fecha == input$rango_tamano_ano2 & departamento_uy == input$tamano_depto & sexo == "Total" )%>%
+      mutate(edad = gsub("años de edad","",edad))
+    
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
+    
+    
+    
+    g1 <- piramide %>%
+      ggplot(aes(x = edad, text=paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
+      geom_col(data = piramide, 
+               aes(y = round(valor,2)),fill="#3182BD") +
+      expand_limits(y = c(-50, 50)) +
+      scale_y_continuous(breaks = seq(-50, 50, by = 10),
+                         labels = abs) + 
+      coord_flip() +
+      theme_minimal()+
+      theme(legend.title = element_blank(),
+            legend.position = "none",
+            axis.text.y = element_text(size=7),
+            axis.text.x =element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            strip.text.x = element_text(size = 8),
+            plot.title = element_text(size=13),
+            plot.caption = element_text(size=9,face = "italic",hjust = 0)
+            
+            
+      )+labs(
+        x = "",
+        y = "",
+        caption = "")
+    
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
+                                   x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
+    
+  } else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" 
+            & input$corte_tamano == "Sexo"){
+    
+    piramide = base_tamano() %>%
+      filter(fecha == input$rango_tamano_ano2 & departamento_uy == input$tamano_depto & sexo != "Total" )%>%
+      mutate(edad = gsub("años de edad","",edad))
+    
+    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
+                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
+                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
+    
+    
+    g1 <- piramide %>%
+      ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
+      geom_col(data = filter(piramide,
+                             sexo == "Varones"),
+               aes(y = round(-1*valor*100,2))) +
+      geom_col(data = filter(piramide,
+                             sexo == "Mujeres"),
+               aes(y = round(valor*100,2))) +
+      expand_limits(y = c(-50, 50)) +
+      scale_y_continuous(breaks = seq(-50, 50, by = 10),
+                         labels = abs) +
+      scale_fill_manual(name = "Sexo",
+                        values = c("Varones" = "#C6DBEF",
+                                   "Mujeres" = "#2171B5")) +
+      coord_flip() +
+      theme_minimal()+
+      theme(legend.title = element_blank(),
+            legend.position = "bottom",
+            axis.text.y = element_text(size=7),
+            axis.text.x =element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            strip.text.x = element_text(size = 8),
+            plot.title = element_text(size=13),
+            plot.caption = element_text(size=9,face = "italic",hjust = 0)
+            
+      )+labs(
+        x = "",
+        y = "",
+        caption = "")
+    
+    
+    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
+                     hoverinfo = 'text',tooltip = c("text"))%>%
+      plotly::layout(legend = list(orientation = "h",
+                                   xanchor = "center",
+                                   x = 0.5,y=-0.2)) %>%
+      
+      plotly::config(displayModeBar = TRUE,
+                     modeBarButtonsToRemove = list(
+                       "pan2d",
+                       "autoScale2d",
+                       "resetScale2d",
+                       "hoverClosestCartesian",
+                       "hoverCompareCartesian",
+                       "sendDataToCloud",
+                       "toggleHover",
+                       "resetViews",
+                       "toggleSpikelines",
+                       "resetViewMapbox"
+                     ),showLink = FALSE,
+                     displaylogo = FALSE)
+    
+  }
+  
 
-  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
+  else if(input$indicador_tamano == "Proyecciones de población (INE)" 
+     & input$corte_tamano == "Total" ) {
 
     
     g1 <- base_tamano_rango() %>%
@@ -1266,133 +1402,9 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }  else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
-    
-    piramide = base_tamano_depto() %>%
-      filter(fecha == input$rango_tamano_ano & departamento_uy == input$tamano_depto & sexo == "Total" )%>%
-      mutate(edad = gsub("años de edad","",edad))
-    
-    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
-                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
-                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
-    
-    
-    
-    g1 <- piramide %>%
-      ggplot(aes(x = edad, text=paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1)))) +
-      geom_col(data = piramide, 
-               aes(y = round(valor,2)),fill="#3182BD") +
-      expand_limits(y = c(-50, 50)) +
-      scale_y_continuous(breaks = seq(-50, 50, by = 10),
-                         labels = abs) + 
-      coord_flip() +
-      theme_minimal()+
-      theme(legend.title = element_blank(),
-            legend.position = "none",
-            axis.text.y = element_text(size=7),
-            axis.text.x =element_blank(),
-            axis.title.x = element_blank(),
-            axis.title.y = element_blank(),
-            strip.text.x = element_text(size = 8),
-            plot.title = element_text(size=13),
-            plot.caption = element_text(size=9,face = "italic",hjust = 0)
-              
-            
-      )+labs(
-        x = "",
-        y = "",
-        caption = "")
-    
-    
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",
-                                   xanchor = "center",
-                                   x = 0.5,y=-0.2)) %>%
-      
-      plotly::config(displayModeBar = TRUE,
-                     modeBarButtonsToRemove = list(
-                       "pan2d",
-                       "autoScale2d",
-                       "resetScale2d",
-                       "hoverClosestCartesian",
-                       "hoverCompareCartesian",
-                       "sendDataToCloud",
-                       "toggleHover",
-                       "resetViews",
-                       "toggleSpikelines",
-                       "resetViewMapbox"
-                     ),showLink = FALSE,
-                     displaylogo = FALSE)
-    
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
-    
-    piramide = base_tamano_depto() %>%
-      filter(fecha == input$rango_tamano_ano & departamento_uy == input$tamano_depto & sexo != "Total" )%>%
-      mutate(edad = gsub("años de edad","",edad))
-    
-    piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
-                                                    "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
-                                                    "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
-    
-    
-    g1 <- piramide %>%
-      ggplot(aes(x = edad, fill = sexo, text=paste(paste("</br>Año:",fecha, "</br>Departamento:",departamento_uy,"</br>Tramo de edad:",edad,"</br>Valor:",round(valor,1))))) +
-      geom_col(data = filter(piramide, 
-                             sexo == "Varones"), 
-               aes(y = round(-1*valor*100,2))) +
-      geom_col(data = filter(piramide, 
-                             sexo == "Mujeres"), 
-               aes(y = round(valor*100,2))) +  
-      expand_limits(y = c(-50, 50)) +
-      scale_y_continuous(breaks = seq(-50, 50, by = 10),
-                         labels = abs) + 
-      scale_fill_manual(name = "Sexo",
-                        values = c("Varones" = "#C6DBEF",
-                                   "Mujeres" = "#2171B5")) +
-      coord_flip() +
-      theme_minimal()+
-      theme(legend.title = element_blank(),
-            legend.position = "bottom",
-            axis.text.y = element_text(size=7),
-            axis.text.x =element_blank(),
-            axis.title.x = element_blank(),
-            axis.title.y = element_blank(),
-            strip.text.x = element_text(size = 8),
-            plot.title = element_text(size=13),
-            plot.caption = element_text(size=9,face = "italic",hjust = 0)
-            
-      )+labs(
-        x = "",
-        y = "",
-        caption = "")
-    
-    
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",
-                                   xanchor = "center",
-                                   x = 0.5,y=-0.2)) %>%
-      
-      plotly::config(displayModeBar = TRUE,
-                     modeBarButtonsToRemove = list(
-                       "pan2d",
-                       "autoScale2d",
-                       "resetScale2d",
-                       "hoverClosestCartesian",
-                       "hoverCompareCartesian",
-                       "sendDataToCloud",
-                       "toggleHover",
-                       "resetViews",
-                       "toggleSpikelines",
-                       "resetViewMapbox"
-                     ),showLink = FALSE,
-                     displaylogo = FALSE)
-    
-  }
-
+  }  
+  
+  
 })
 
 
@@ -1402,7 +1414,51 @@ output$plot_tamano <- plotly::renderPlotly({
 
 output$tabla_tamano <- renderDT({
   
-  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
+  if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" 
+          & input$corte_tamano == "Total"){
+    
+    datatable(base_tamano() %>%
+                
+                filter(sexo == "Total" & departamento_uy == input$tamano_depto & fecha == input$rango_tamano_ano2) %>%
+                arrange(fecha)%>%
+                transmute(
+                  "Indicador" = nomindicador,
+                  "Año" = fecha,
+                  "Edad" = edad,
+                  "Departamento" = departamento_uy,
+                  "Valor" = valor),
+              rownames = FALSE,
+              options = list(columnDefs = 
+                               list(list(className = 'dt-center', 
+                                         targets = "_all"))))
+    
+    
+    
+    
+  } else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
+    
+    datatable(base_tamano() %>%
+                
+                filter(sexo != "Total" & departamento_uy == input$tamano_depto & fecha == input$rango_tamano_ano2) %>%
+                arrange(fecha)%>%
+                transmute(
+                  "Indicador" = nomindicador,
+                  "Año" = fecha,
+                  "Edad" = edad,
+                  "Departamento" = departamento_uy,
+                  "Sexo" = sexo,
+                  "Valor" = valor),
+              rownames = FALSE,
+              options = list(columnDefs = 
+                               list(list(className = 'dt-center', 
+                                         targets = "_all"))))
+    
+    
+    
+    
+  }
+  
+  else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
     
     
     datatable(base_tamano_rango() %>%
@@ -1512,7 +1568,8 @@ output$tabla_tamano <- renderDT({
     
     
     
-  }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
+  }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" 
+           & input$corte_tamano_tot == "Total"){
     
            
     datatable(base_tamano() %>%
@@ -1523,47 +1580,6 @@ output$tabla_tamano <- renderDT({
                   "Año" = fecha,
                   "Departamento" = departamento_uy,
                   "Valor" = round(valor,1)),
-              rownames = FALSE,
-              options = list(columnDefs = 
-                               list(list(className = 'dt-center', 
-                                         targets = "_all"))))
-    
-    
-    
-    
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
-    
-    datatable(base_tamano_depto() %>%
-                
-                filter(sexo == "Total" & departamento_uy == input$tamano_depto) %>%
-                arrange(fecha)%>%
-                transmute(
-                  "Indicador" = nomindicador,
-                  "Año" = fecha,
-                  "Edad" = edad,
-                  "Departamento" = departamento_uy,
-                  "Valor" = valor),
-              rownames = FALSE,
-              options = list(columnDefs = 
-                               list(list(className = 'dt-center', 
-                                         targets = "_all"))))
-    
-    
-    
-    
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
-    
-    datatable(base_tamano_depto() %>%
-                
-                filter(sexo != "Total" & departamento_uy == input$tamano_depto) %>%
-                arrange(fecha)%>%
-                transmute(
-                  "Indicador" = nomindicador,
-                  "Año" = fecha,
-                  "Edad" = edad,
-                  "Departamento" = departamento_uy,
-                  "Sexo" = sexo,
-                  "Valor" = valor),
               rownames = FALSE,
               options = list(columnDefs = 
                                list(list(className = 'dt-center', 
@@ -1587,8 +1603,41 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
     paste0(input$indicador_tamano,"-",input$corte_tamano, ".xlsx", sep = "")
   },
   content = function(file) {
+    
+     if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
+      
+      openxlsx::write.xlsx(base_tamano() %>%
+                             
+                             filter(sexo == "Total" & departamento_uy == input$tamano_depto& fecha == input$rango_tamano_ano2) %>%
+                             arrange(fecha)%>%
+                             transmute(
+                               "Indicador" = nomindicador,
+                               "Año" = fecha,
+                               "Edad" = edad,
+                               "Departamento" = departamento_uy,
+                               "Valor" = valor,
+                               "Fuente" = fuente),file,
+                           row.names = FALSE)
+      
+      
+    }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
+      
+      openxlsx::write.xlsx(base_tamano() %>%
+                             
+                             filter(sexo != "Total" & departamento_uy == input$tamano_depto & fecha == input$rango_tamano_ano2) %>%
+                             arrange(fecha)%>%
+                             transmute(
+                               "Indicador" = nomindicador,
+                               "Año" = fecha,
+                               "Departamento" = departamento_uy,
+                               "Sexo" = sexo,
+                               "Valor" = valor,
+                               "Fuente" = fuente),file,
+                           row.names = FALSE)
+      
+    }
 
-  if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
+  else if(input$indicador_tamano == "Proyecciones de población (INE)" & input$corte_tamano == "Total") {
     
     
     openxlsx::write.xlsx(base_tamano_rango() %>%
@@ -1692,37 +1741,6 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                              "Fuente" = fuente),file,
                          row.names = FALSE)
     
-    
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Total"){
-    
-    openxlsx::write.xlsx(base_tamano_depto() %>%
-                           
-                           filter(sexo == "Total" & departamento_uy == input$tamano_depto) %>%
-                           arrange(fecha)%>%
-                           transmute(
-                             "Indicador" = nomindicador,
-                             "Año" = fecha,
-                             "Edad" = edad,
-                             "Departamento" = departamento_uy,
-                             "Valor" = valor,
-                             "Fuente" = fuente),file,
-                         row.names = FALSE)
-    
-    
-  }else if(input$indicador_tamano == "Población  departamental censada por edades quinquenales y sexo" & input$corte_tamano == "Sexo"){
-    
-    openxlsx::write.xlsx(base_tamano_depto() %>%
-                           
-                           filter(sexo != "Total" & departamento_uy == input$tamano_depto) %>%
-                           arrange(fecha)%>%
-                           transmute(
-                             "Indicador" = nomindicador,
-                             "Año" = fecha,
-                             "Departamento" = departamento_uy,
-                             "Sexo" = sexo,
-                             "Valor" = valor,
-                             "Fuente" = fuente),file,
-                         row.names = FALSE)
     
   }
   
