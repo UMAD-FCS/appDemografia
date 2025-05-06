@@ -804,8 +804,8 @@ server <- function(session, input, output) {
   ##corte
   output$selectcorte_tamano <- renderUI({
     
-    if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población"){
-    
+    if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" |
+       input$indicador_tamano == "Población departamental"){
     selectInput("corte_tamano_tot", "Resultados por:", choices = c("Total"))
  
       
@@ -1300,56 +1300,56 @@ output$plot_tamano <- plotly::renderPlotly({
                      ),showLink = FALSE,
                      displaylogo = FALSE)
     
-  }  else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
-    
-    
-    mapa = base_tamano() %>%
-      filter(fecha == input$rango_tamano_ano & sexo != "Total" )%>%
-      mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
-                                                          id = "Latin-ASCII")))
-    
-    mapa_geo = depto %>%
-      left_join(mapa,by = "nombre") 
-    
-    g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",departamento_uy,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) + geom_sf() +
-      geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
-      scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
-      facet_wrap(~sexo,ncol=2)+
-      labs(x = "",
-           y = "",
-           caption = "")+
-      theme_minimal()+
-      theme(
-        axis.line = element_blank(),
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        legend.position = "none",
-        panel.grid.major = element_line(colour = "transparent"))
-    
-    
-    plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
-                     hoverinfo = 'text',tooltip = c("text"))%>%
-      plotly::layout(legend = list(orientation = "h",
-                                   xanchor = "center",
-                                   x = 0.5,y=-0.2)) %>%
-      
-      plotly::config(displayModeBar = TRUE,
-                     modeBarButtonsToRemove = list(
-                       "pan2d",
-                       "autoScale2d",
-                       "resetScale2d",
-                       "hoverClosestCartesian",
-                       "hoverCompareCartesian",
-                       "sendDataToCloud",
-                       "toggleHover",
-                       "resetViews",
-                       "toggleSpikelines",
-                       "resetViewMapbox"
-                     ),showLink = FALSE,
-                     displaylogo = FALSE)
+  # }  else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
+  #   
+  #   
+  #   mapa = base_tamano() %>%
+  #     filter(fecha == input$rango_tamano_ano & sexo != "Total" )%>%
+  #     mutate(nombre = toupper(stringi::stri_trans_general(str = departamento_uy, 
+  #                                                         id = "Latin-ASCII")))
+  #   
+  #   mapa_geo = depto %>%
+  #     left_join(mapa,by = "nombre") 
+  #   
+  #   g1 <- ggplot(mapa_geo,aes(fill = valor,text = paste("</br>Año:",fecha,"</br>Departamento:",departamento_uy,"</br>Sexo:",sexo,"</br>Valor:",round(valor,1)))) + geom_sf() +
+  #     geom_sf_text(aes(label = round(valor,1)), colour = "black",size=3,fontface = "bold")+
+  #     scale_fill_gradient(low = "#9ECAE1", high = "#08306B")+
+  #     facet_wrap(~sexo,ncol=2)+
+  #     labs(x = "",
+  #          y = "",
+  #          caption = "")+
+  #     theme_minimal()+
+  #     theme(
+  #       axis.line = element_blank(),
+  #       axis.text.x = element_blank(),
+  #       axis.text.y = element_blank(),
+  #       axis.ticks = element_blank(),
+  #       axis.title.x = element_blank(),
+  #       axis.title.y = element_blank(),
+  #       legend.position = "none",
+  #       panel.grid.major = element_line(colour = "transparent"))
+  #   
+  #   
+  #   plotly::ggplotly(g1, width = (0.60*as.numeric(input$dimension[1])), height = 0.70*as.numeric(input$dimension[2]),
+  #                    hoverinfo = 'text',tooltip = c("text"))%>%
+  #     plotly::layout(legend = list(orientation = "h",
+  #                                  xanchor = "center",
+  #                                  x = 0.5,y=-0.2)) %>%
+  #     
+  #     plotly::config(displayModeBar = TRUE,
+  #                    modeBarButtonsToRemove = list(
+  #                      "pan2d",
+  #                      "autoScale2d",
+  #                      "resetScale2d",
+  #                      "hoverClosestCartesian",
+  #                      "hoverCompareCartesian",
+  #                      "sendDataToCloud",
+  #                      "toggleHover",
+  #                      "resetViews",
+  #                      "toggleSpikelines",
+  #                      "resetViewMapbox"
+  #                    ),showLink = FALSE,
+  #                    displaylogo = FALSE)
     
   }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
     
@@ -1549,21 +1549,21 @@ output$tabla_tamano <- renderDT({
     
     
     
-  } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
-    
-    datatable(base_tamano() %>%
-                filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
-                arrange(fecha)%>%
-                transmute(
-                  "Indicador" = nomindicador,
-                  "Año" = fecha,
-                  "Departamento" = departamento_uy,
-                  "Sexo" = sexo,
-                  "Valor" = valor),
-              rownames = FALSE,
-              options = list(columnDefs = 
-                               list(list(className = 'dt-center', 
-                                         targets = "_all"))))
+  # } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
+  #   
+  #   datatable(base_tamano() %>%
+  #               filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
+  #               arrange(fecha)%>%
+  #               transmute(
+  #                 "Indicador" = nomindicador,
+  #                 "Año" = fecha,
+  #                 "Departamento" = departamento_uy,
+  #                 "Sexo" = sexo,
+  #                 "Valor" = valor),
+  #             rownames = FALSE,
+  #             options = list(columnDefs = 
+  #                              list(list(className = 'dt-center', 
+  #                                        targets = "_all"))))
     
     
     
@@ -1712,19 +1712,19 @@ output$tabla_resultado_tamano_descarga <- downloadHandler(
                          row.names = FALSE)
     
     
-  } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
-    
-    openxlsx::write.xlsx(base_tamano() %>%
-                           filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
-                           arrange(fecha)%>%
-                           transmute(
-                             "Indicador" = nomindicador,
-                             "Año" = fecha,
-                             "Departamento" = departamento_uy,
-                             "Sexo" = sexo,
-                             "Valor" = valor,
-                             "Fuente" = fuente),file,
-                         row.names = FALSE)
+  # } else if(input$indicador_tamano == "Población departamental" & input$corte_tamano == "Sexo"){
+  #   
+  #   openxlsx::write.xlsx(base_tamano() %>%
+  #                          filter(sexo != "Total" & fecha == input$rango_tamano_ano) %>%
+  #                          arrange(fecha)%>%
+  #                          transmute(
+  #                            "Indicador" = nomindicador,
+  #                            "Año" = fecha,
+  #                            "Departamento" = departamento_uy,
+  #                            "Sexo" = sexo,
+  #                            "Valor" = valor,
+  #                            "Fuente" = fuente),file,
+  #                        row.names = FALSE)
     
   }else if(input$indicador_tamano == "Porcentaje de población departamental sobre total de población" & input$corte_tamano_tot == "Total"){
     
@@ -1937,7 +1937,7 @@ base_fecundidad <- reactive({
 
 ##corte
 output$selectcorte_fecundidad <- renderUI({
-  if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad") {
+  if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad" | input$indicador_fecundidad == "Edad media de la fecundidad" | input$indicador_fecundidad == "Tasa global de fecundidad total país  (1996-2050)") {
     
     
   } else{
@@ -1991,7 +1991,8 @@ base_fecundidad_rango <- reactive({
 
 output$title_fecundidad <- renderUI({ 
   
-if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+  if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad"| input$indicador_fecundidad == "Porcentaje de embarazos no planificados por edad" | input$indicador_fecundidad == "Edad media de la fecundidad" | input$indicador_fecundidad == "Tasa global de fecundidad total país  (1996-2050)") {
+    
 
  
   
@@ -2065,7 +2066,7 @@ output$plot_fecundidad <- plotly::renderPlotly({
                      displaylogo = FALSE)
     
   
-  } else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
+  } else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad  == "Tasa global de fecundidad total país  (1996-2050)"| input$indicador_fecundidad == "Tasa Global de Fecundidad" | input$indicador_fecundidad == "Edad media de la fecundidad") {
     
     
     g1 <- base_fecundidad_rango() %>%
@@ -2175,8 +2176,8 @@ output$tabla_fecundidad <- renderDT({
                                          targets = "_all"))))
     
  
-  }  else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
-  
+  } else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad  == "Tasa global de fecundidad total país  (1996-2050)"| input$indicador_fecundidad == "Tasa Global de Fecundidad" | input$indicador_fecundidad == "Edad media de la fecundidad") {
+    
     datatable(base_fecundidad_rango() %>%
                 #filter(departamento_uy == input$corte_fecundidad) %>%
                 arrange(fecha)%>%
@@ -2232,8 +2233,8 @@ output$tabla_resultado_fecundidad_descarga <- downloadHandler(
                                "Fuente" = fuente),file,
                            row.names = FALSE)
     
-    }  else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad == "Tasa Global de Fecundidad") {
-   
+    } else if(input$indicador_fecundidad == "Cantidad de nacimientos" | input$indicador_fecundidad  == "Tasa global de fecundidad total país  (1996-2050)"| input$indicador_fecundidad == "Tasa Global de Fecundidad" | input$indicador_fecundidad == "Edad media de la fecundidad") {
+      
       openxlsx::write.xlsx(base_fecundidad() %>% 
                              filter(fecha==input$rango_fecundidad_ano)%>%
                              arrange(fecha)%>%
@@ -2331,9 +2332,15 @@ output$rango_mortalidad <- renderUI({
 
 
 output$selectcorte_mortalidad_depto <- renderUI({
+
   
-    selectInput("corte_mortalidad_depto", "Área geográfica:", choices = base_mortalidad()  %>% pull(departamento_uy) %>% unique())
+  if(input$indicador_mortalidad == "Esperanza de vida al nacer (1996-2050)"){
     
+  }    
+    
+  else {  
+    selectInput("corte_mortalidad_depto", "Área geográfica:", choices = base_mortalidad()  %>% pull(departamento_uy) %>% unique())
+  }
   
 })
 
@@ -2607,6 +2614,7 @@ output$tabla_mortalidad <- renderDT({
               transmute(
                 "Indicador" = nomindicador,
                 "Año" = fecha,
+                "Sexo" = sexo,
                 "Área geográfica" = departamento_uy,
                 "Valor" = round(valor,1)),
             rownames = FALSE,
@@ -2624,6 +2632,7 @@ output$tabla_mortalidad <- renderDT({
               transmute(
                 "Indicador" = nomindicador,
                 "Año" = fecha,
+                "Sexo" = sexo,
                 "Área geográfica" = departamento_uy,
                 "Valor" = round(valor,1)),
             rownames = FALSE,
