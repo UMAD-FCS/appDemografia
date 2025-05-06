@@ -338,7 +338,35 @@ for (dep in 1:19) {
   resultados[[paste0("i06_v_", dep)]] <- i06_v
 }
 
-i06 <- do.call(rbind, resultados)
+i06_s <- do.call(rbind, resultados)
+
+crear_tabla <- function(dfp, dep_value, sexo_label) {
+  tabla <- dfp %>%
+    filter(DEPARTAMENTO == dep_value) %>%
+    .$quinq %>%
+    table()
+  
+  SEXO <- rep(sexo_label, length(tabla))
+  DEPARTAMENTO_UY <- rep(dep_value, length(tabla))
+  
+  tabla <- as.data.frame(tabla) %>%
+    as.matrix() %>%
+    cbind(SEXO, DEPARTAMENTO_UY)
+  
+  return(tabla)
+}
+
+resultados <- list()
+
+for (dep in 1:19) {
+  i06_t <- crear_tabla(dfp, dep, "Total")
+  
+  resultados[[paste0("i06_t_", dep)]] <- i06_t
+}
+
+i06_t <- do.call(rbind, resultados)
+
+i06 <- rbind(i06_s, i06_t)
 colnames(i06) <- c("EDAD","VALOR","SEXO","DEPARTAMENTO_UY")
 
 
