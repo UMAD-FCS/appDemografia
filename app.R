@@ -79,7 +79,7 @@ base_fichas <- readxl::read_excel("bases/Notas metodológicas.xls",sheet = "LIST
   janitor::clean_names() 
 
 
-df_generica <- readxl::read_excel("bases/Base_Motor_Demografica_rev2025_vf.xlsx") %>% 
+df_generica <- readxl::read_excel("bases/Base Motor Demografica.xlsx") %>% 
   janitor::clean_names() %>% 
   select(- codind, - responsable) %>%
   left_join(.,base_fichas[,c("nomindicador","definicion","forma_de_calculo")],by="nomindicador")
