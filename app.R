@@ -923,7 +923,7 @@ output$plot_tamano <- plotly::renderPlotly({
     piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
                                                     "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
                                                     "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años", "100 años y más"))
     
     
     
@@ -984,7 +984,7 @@ output$plot_tamano <- plotly::renderPlotly({
     piramide$edad = factor(piramide$edad,levels = c("0-4 años","5-9 años","10-14 años","15-19 años",
                                                     "20-24 años","25-29 años","30-34 años","35-39 años","40-44 años",
                                                     "45-49 años","50-54 años","55-59 años","60-64 años","65-69 años","70-74 años",
-                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años"))
+                                                    "75-79 años","80-84 años","85-89 años","90-94 años", "95-99 años", "100 años y más"))
     
     
     g1 <- piramide %>%
